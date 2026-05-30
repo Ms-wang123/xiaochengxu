@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#1a73e8">
+    <title>电池检测报价查询</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <!-- 顶部 -->
+        <header class="header">
+            <div class="header-inner">
+                <h1>🔋 电池检测报价查询</h1>
+                <span class="header-sub">输入标准号，秒出报价</span>
+            </div>
+        </header>
+
+        <!-- 搜索区域 -->
+        <div class="search-section">
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchInput" class="search-input"
+                    placeholder="输入标准号，如 62619、31241、UN38.3..."
+                    autocomplete="off" autocorrect="off" autocapitalize="off">
+                <button id="clearBtn" class="clear-btn" style="display:none;">✕</button>
+            </div>
+            <div class="search-hints">
+                <span>试试输入：</span>
+                <span class="hint-tag" data-hint="62619">62619</span>
+                <span class="hint-tag" data-hint="31241">31241</span>
+                <span class="hint-tag" data-hint="UN38.3">UN38.3</span>
+                <span class="hint-tag" data-hint="62133">62133</span>
+                <span class="hint-tag" data-hint="1642">UL1642</span>
+            </div>
+            <!-- 搜索结果建议 -->
+            <div id="suggestions" class="suggestions" style="display:none;"></div>
+        </div>
+
+        <!-- 结果区域 -->
+        <div id="resultSection" class="result-section" style="display:none;">
+            <!-- 标准名称 -->
+            <div class="result-card name-card">
+                <div class="name-badge" id="resultCategory"></div>
+                <h2 id="resultName" class="result-name"></h2>
+            </div>
+
+            <!-- 关键信息卡片 -->
+            <div class="info-grid">
+                <div class="info-card">
+                    <div class="info-icon">🧪</div>
+                    <div class="info-label">样品数量</div>
+                    <div class="info-value" id="resultSamples"></div>
+                </div>
+                <div class="info-card">
+                    <div class="info-icon">⏱️</div>
+                    <div class="info-label">检测周期</div>
+                    <div class="info-value" id="resultPeriod"></div>
+                </div>
+                <div class="info-card highlight">
+                    <div class="info-icon">💰</div>
+                    <div class="info-label">电芯价格</div>
+                    <div class="info-value price" id="resultCellPrice"></div>
+                </div>
+                <div class="info-card highlight">
+                    <div class="info-icon">💵</div>
+                    <div class="info-label">电池组/系统价格</div>
+                    <div class="info-value price" id="resultBatteryPrice"></div>
+                </div>
+            </div>
+
+            <!-- 详细报价 -->
+            <div class="detail-card" id="totalPriceCard" style="display:none;">
+                <div class="detail-title">📋 威凯/机构报价</div>
+                <div class="detail-content" id="resultTotalPrice"></div>
+            </div>
+            <div class="detail-card" id="certFeeCard" style="display:none;">
+                <div class="detail-title">📜 证书费用</div>
+                <div class="detail-content" id="resultCertFee"></div>
+            </div>
+            <div class="detail-card" id="industryCard" style="display:none;">
+                <div class="detail-title">🏭 行业参考报价</div>
+                <div class="detail-content" id="resultIndustryPrice"></div>
+            </div>
+            <div class="detail-card" id="remarkCard" style="display:none;">
+                <div class="detail-title">📝 备注</div>
+                <div class="detail-content" id="resultRemark"></div>
+            </div>
+        </div>
+
+        <!-- 空状态 -->
+        <div id="emptyState" class="empty-state">
+            <div class="empty-icon">🔍</div>
+            <p class="empty-title">输入标准号查询报价</p>
+            <p class="empty-desc">支持 GB、IEC、UL、UN38.3、CCC 等标准</p>
+            <div class="empty-examples">
+                <div class="example-item" data-hint="62619">
+                    <span class="example-code">IEC 62619</span>
+                    <span class="example-name">工业用锂蓄电池</span>
+                </div>
+                <div class="example-item" data-hint="31241">
+                    <span class="example-code">GB/T 31241</span>
+                    <span class="example-name">便携式移动电源</span>
+                </div>
+                <div class="example-item" data-hint="UN38.3">
+                    <span class="example-code">UN38.3</span>
+                    <span class="example-name">危险货物运输</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 未找到 -->
+        <div id="notFound" class="not-found" style="display:none;">
+            <div class="not-found-icon">😕</div>
+            <p>未找到匹配的标准</p>
+            <p class="not-found-hint">请尝试输入标准编号的数字部分，如 62619、31241</p>
+        </div>
+
+        <!-- 加载中 -->
+        <div id="loading" class="loading" style="display:none;">
+            <div class="spinner"></div>
+            <p>查询中...</p>
+        </div>
+    </div>
+
+    <script src="search_index.json?v=1"></script>
+    <script src="app.js"></script>
+</body>
+</html>
