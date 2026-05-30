@@ -1,55 +1,115 @@
 // ========================================
 // 电池检测报价查询 - 主逻辑
+// 支持本地服务器模式和GitHub Pages静态模式
 // ========================================
 
 (function() {
     'use strict';
 
-    const searchInput = document.getElementById('searchInput');
-    const clearBtn = document.getElementById('clearBtn');
-    const suggestionsEl = document.getElementById('suggestions');
-    const resultSection = document.getElementById('resultSection');
-    const emptyState = document.getElementById('emptyState');
-    const notFound = document.getElementById('notFound');
-    const loadingEl = document.getElementById('loading');
-    const saveBtn = document.getElementById('saveBtn');
-    const saveMsg = document.getElementById('saveMsg');
-    const excelPathInfo = document.getElementById('excelPathInfo');
+    // ===== DOM 元素 =====
+    var searchInput = document.getElementById('searchInput');
+    var clearBtn = document.getElementById('clearBtn');
+    var suggestionsEl = document.getElementById('suggestions');
+    var resultSection = document.getElementById('resultSection');
+    var emptyState = document.getElementById('emptyState');
+    var notFound = document.getElementById('notFound');
+    var loadingEl = document.getElementById('loading');
+    var saveBtn = document.getElementById('saveBtn');
+    var saveMsg = document.getElementById('saveMsg');
+    var excelPathInfo = document.getElementById('excelPathInfo');
 
-    // 首页表格相关
-    const sheetTabs = document.getElementById('sheetTabs');
-    const excelTable = document.getElementById('excelTable');
-    const excelTableHead = document.getElementById('excelTableHead');
-    const excelTableBody = document.getElementById('excelTableBody');
-    const tableLoading = document.getElementById('tableLoading');
-    const tableInfo = document.getElementById('tableInfo');
+    var sheetTabs = document.getElementById('sheetTabs');
+    var excelTable = document.getElementById('excelTable');
+    var excelTableHead = document.getElementById('excelTableHead');
+    var excelTableBody = document.getElementById('excelTableBody');
+    var tableLoading = document.getElementById('tableLoading');
+    var tableInfo = document.getElementById('tableInfo');
 
-    // 登录相关
-    const loginBtn = document.getElementById('loginBtn');
-    const logoutBtn = document.getElementById('logoutBtn');
-    const loginModal = document.getElementById('loginModal');
-    const closeLoginBtn = document.getElementById('closeLoginBtn');
-    const loginPassword = document.getElementById('loginPassword');
-    const doLoginBtn = document.getElementById('doLoginBtn');
-    const loginError = document.getElementById('loginError');
-    const editPriceSection = document.getElementById('editPriceSection');
+    var loginBtn = document.getElementById('loginBtn');
+    var logoutBtn = document.getElementById('logoutBtn');
+    var loginModal = document.getElementById('loginModal');
+    var closeLoginBtn = document.getElementById('closeLoginBtn');
+    var loginPassword = document.getElementById('loginPassword');
+    var doLoginBtn = document.getElementById('doLoginBtn');
+    var loginError = document.getElementById('loginError');
+    var editPriceSection = document.getElementById('editPriceSection');
 
-    const exportBtn = document.getElementById('exportBtn');
+    var exportBtn = document.getElementById('exportBtn');
 
-    let debounceTimer = null;
-    let currentItem = null;
-    let currentSheet = null;
-    let allSheets = [];
-    let isAdmin = false;
+    var debounceTimer = null;
+    var currentItem = null;
+    var currentSheet = null;
+    var allSheets = [];
+    var isAdmin = false;
+    var staticData = null;       // 静态数据（data.json）
+    var useStaticData = false;   // 是否使用静态数据模式
+    var staticIndex = {};        // 静态搜索索引
 
     // 从 localStorage 检查登录状态
-    const savedAdmin = localStorage.getItem('battery_admin');
+    var savedAdmin = localStorage.getItem('battery_admin');
     if (savedAdmin === 'true') {
         isAdmin = true;
-        updateLoginUI();
     }
 
-    // ===== 通用 fetch 包装：带重试和超时 =====
+    // ===== 数据加载模式检测 =====
+    function initDataMode() {
+        // 先尝试从静态 data.json 加载
+        return fetch('data.json')
+            .then(function(res) {
+                if (res.ok) {
+                    useStaticData = true;
+                    return res.json();
+                }
+                throw new Error('no_static_data');
+            })
+            .then(function(data) {
+                staticData = data;
+                buildStaticIndex();
+                console.log('静态数据模式: ' + Object.keys(staticIndex).length + ' 条标准, ' + data.sheets.length + ' 个Sheet');
+            })
+            .catch(function() {
+                // 没有 data.json，尝试服务器模式
+                useStaticData = false;
+                console.log('服务器模式');
+                return Promise.resolve();
+            });
+    }
+
+    function buildStaticIndex() {
+        if (!staticData || !staticData.prices) return;
+        staticIndex = {};
+        for (var stdName in staticData.prices) {
+            if (staticData.prices.hasOwnProperty(stdName)) {
+                var p = staticData.prices[stdName];
+                // 提取标准编号
+                var stdId = extractStandardId(stdName);
+                // 用多个键建立索引
+                var keys = [stdName, stdName.toLowerCase()];
+                if (stdId) {
+                    keys.push(stdId);
+                    keys.push(stdId.toLowerCase());
+                }
+                for (var i = 0; i < keys.length; i++) {
+                    staticIndex[keys[i]] = p;
+                }
+            }
+        }
+    }
+
+    function extractStandardId(name) {
+        if (!name) return '';
+        // 匹配标准编号: IEC 62619, GB/T 31241, UN38.3, UL 1642 等
+        var m = name.match(/(?:IEC|GB\/T|GB|UL|UN|QC\/T|SJ\/T|MT\/T)\s*[\d.]+/i);
+        if (m) return m[0];
+        m = name.match(/[A-Z]+\s*[\d.]+/);
+        if (m) return m[0];
+        // 纯数字
+        m = name.match(/(\d{4,})/);
+        if (m) return m[1];
+        return '';
+    }
+
+    // ===== 通用 fetch 包装 =====
     function fetchWithRetry(url, options, retries) {
         retries = retries === undefined ? 2 : retries;
         var controller = new AbortController();
@@ -80,30 +140,30 @@
             return;
         }
 
-        // 精确匹配
+        if (useStaticData) {
+            searchStatic(q);
+            return;
+        }
+
+        // 服务器模式
         if (typeof search_index !== 'undefined' && search_index[q]) {
             showResult(search_index[q]);
             return;
         }
-
-        // 大小写不敏感匹配
         var qLower = q.toLowerCase();
         if (typeof search_index !== 'undefined' && search_index[qLower]) {
             showResult(search_index[qLower]);
             return;
         }
-
-        // 模糊匹配
         if (typeof search_index !== 'undefined') {
             var matches = [];
             for (var key in search_index) {
                 if (search_index.hasOwnProperty(key)) {
-                    if (key.toLowerCase().includes(qLower)) {
+                    if (key.toLowerCase().indexOf(qLower) !== -1) {
                         matches.push({ key: key, item: search_index[key] });
                     }
                 }
             }
-
             var seen = new Set();
             var uniqueMatches = [];
             for (var i = 0; i < matches.length; i++) {
@@ -112,7 +172,6 @@
                     uniqueMatches.push(matches[i]);
                 }
             }
-
             if (uniqueMatches.length === 1) {
                 showResult(uniqueMatches[0].item);
                 return;
@@ -121,8 +180,89 @@
                 return;
             }
         }
-
         showNotFound();
+    }
+
+    function searchStatic(query) {
+        var q = query.trim().toLowerCase();
+
+        // 精确匹配
+        if (staticIndex[q]) {
+            showStaticResult(staticIndex[q]);
+            return;
+        }
+
+        // 模糊匹配
+        var matches = [];
+        for (var key in staticIndex) {
+            if (staticIndex.hasOwnProperty(key)) {
+                if (key.toLowerCase().indexOf(q) !== -1) {
+                    matches.push({ key: key, price: staticIndex[key] });
+                }
+            }
+        }
+
+        // 去重（按 title）
+        var seen = new Set();
+        var uniqueMatches = [];
+        for (var i = 0; i < matches.length; i++) {
+            if (!seen.has(matches[i].price.title)) {
+                seen.add(matches[i].price.title);
+                uniqueMatches.push(matches[i]);
+            }
+        }
+
+        if (uniqueMatches.length === 1) {
+            showStaticResult(uniqueMatches[0].price);
+        } else if (uniqueMatches.length > 1) {
+            showStaticSuggestions(uniqueMatches);
+        } else {
+            showNotFound();
+        }
+    }
+
+    function showStaticResult(priceData) {
+        hideAll();
+        var item = {
+            name: priceData.title || '',
+            category: priceData.sheet || '',
+            cellCount: priceData.sample_cell || '',
+            batteryCount: priceData.sample_battery || '',
+            period: priceData.cycle || '',
+            cellPrice: priceData.cell_price || '',
+            batteryPrice: priceData.battery_price || '',
+            industryPrice: priceData.industry_price || '',
+            certFee: priceData.cert_fee || '',
+            totalPrice: priceData.weikai_quote || '',
+            remark: priceData.remarks || '',
+            id: extractStandardId(priceData.title)
+        };
+        showResult(item);
+    }
+
+    function showStaticSuggestions(matches) {
+        hideAll();
+        suggestionsEl.style.display = 'block';
+        suggestionsEl.innerHTML = matches.slice(0, 8).map(function(m) {
+            var id = extractStandardId(m.price.title) || '';
+            return '<div class="suggestion-item" data-key="' + m.key + '">' +
+                '<span class="suggestion-code">' + id + '</span>' +
+                '<span class="suggestion-name">' + m.price.title + '</span>' +
+                '<span class="suggestion-cat">' + (m.price.sheet || '') + '</span>' +
+                '</div>';
+        }).join('');
+
+        suggestionsEl.querySelectorAll('.suggestion-item').forEach(function(el) {
+            el.addEventListener('click', function() {
+                var key = el.dataset.key;
+                if (staticIndex[key]) {
+                    showStaticResult(staticIndex[key]);
+                    searchInput.value = extractStandardId(staticIndex[key].title);
+                    clearBtn.style.display = 'flex';
+                    suggestionsEl.style.display = 'none';
+                }
+            });
+        });
     }
 
     function showResult(item) {
@@ -131,19 +271,15 @@
         resultSection.style.display = 'block';
         suggestionsEl.style.display = 'none';
 
-        // 标准名称
         document.getElementById('resultName').textContent = (item.category ? '[' + item.category + '] ' : '') + (item.name || '');
 
-        // 样品数量
         var samples = [];
-        if (item.cellCount) samples.push('电芯' + item.cellCount);
-        if (item.batteryCount) samples.push('电池组/系统' + item.batteryCount);
+        if (item.cellCount && item.cellCount !== '0') samples.push('电芯' + item.cellCount);
+        if (item.batteryCount && item.batteryCount !== '0') samples.push('电池组/系统' + item.batteryCount);
         document.getElementById('resultSamples').textContent = samples.join('，') || '详见备注';
 
-        // 周期
         document.getElementById('resultPeriod').textContent = item.period || '详见备注';
 
-        // 价格
         var priceParts = [];
         if (item.cellPrice && item.cellPrice !== '0') {
             priceParts.push('电芯：' + Number(item.cellPrice).toLocaleString() + ' RMB');
@@ -153,7 +289,6 @@
         }
         document.getElementById('resultPrice').textContent = priceParts.join('，') || '详见备注';
 
-        // 行业比价
         var indLine = document.getElementById('industryLine');
         if (item.industryPrice) {
             indLine.style.display = 'block';
@@ -162,7 +297,6 @@
             indLine.style.display = 'none';
         }
 
-        // 证书费
         var certLine = document.getElementById('certFeeLine');
         if (item.certFee) {
             certLine.style.display = 'block';
@@ -171,7 +305,6 @@
             certLine.style.display = 'none';
         }
 
-        // 威凯报价
         var tpLine = document.getElementById('totalPriceLine');
         if (item.totalPrice) {
             tpLine.style.display = 'block';
@@ -180,7 +313,6 @@
             tpLine.style.display = 'none';
         }
 
-        // 备注
         var rmLine = document.getElementById('remarkLine');
         if (item.remark) {
             rmLine.style.display = 'block';
@@ -189,7 +321,6 @@
             rmLine.style.display = 'none';
         }
 
-        // 管理员显示编辑区域
         if (isAdmin) {
             editPriceSection.style.display = 'block';
             document.getElementById('editCellPrice').value = formatPriceValue(item.cellPrice);
@@ -198,7 +329,6 @@
             editPriceSection.style.display = 'none';
         }
 
-        // 隐藏保存消息
         saveMsg.textContent = '';
         saveMsg.className = 'save-msg';
         excelPathInfo.style.display = 'none';
@@ -243,9 +373,6 @@
     function showEmpty() {
         hideAll();
         emptyState.style.display = 'block';
-        if (allSheets.length === 0) {
-            loadSheetTabs();
-        }
     }
 
     function showNotFound() {
@@ -261,7 +388,7 @@
         suggestionsEl.style.display = 'none';
     }
 
-    // ===== 保存价格到Excel =====
+    // ===== 保存价格 =====
     saveBtn.addEventListener('click', function() {
         if (!currentItem) return;
 
@@ -270,6 +397,13 @@
 
         if (!cellPrice && !batteryPrice) {
             saveMsg.textContent = '请至少输入一个价格';
+            saveMsg.className = 'save-msg error';
+            return;
+        }
+
+        if (useStaticData) {
+            // 静态模式：提示需要后端
+            saveMsg.textContent = '静态模式下无法保存价格，请使用本地服务器';
             saveMsg.className = 'save-msg error';
             return;
         }
@@ -296,7 +430,6 @@
                 excelPathInfo.style.display = 'block';
                 if (cellPrice) currentItem.cellPrice = cellPrice;
                 if (batteryPrice) currentItem.batteryPrice = batteryPrice;
-                // 刷新显示的价格
                 showResult(currentItem);
             } else {
                 saveMsg.textContent = '✗ ' + data.message;
@@ -310,13 +443,18 @@
         })
         .finally(function() {
             saveBtn.disabled = false;
-            saveBtn.textContent = '保存价格到Excel';
+            saveBtn.textContent = '修改报价';
         });
     });
 
-    // ===== 首页 Sheet 标签 + 表格 =====
+    // ===== Sheet 标签 + 表格 =====
     function loadSheetTabs() {
         sheetTabs.innerHTML = '<div class="sheet-tabs-loading">加载Sheet列表中...</div>';
+
+        if (useStaticData) {
+            loadSheetTabsStatic();
+            return;
+        }
 
         fetchWithRetry('/api/sheets')
             .then(function(res) { return res.json(); })
@@ -341,6 +479,18 @@
             });
     }
 
+    function loadSheetTabsStatic() {
+        if (!staticData || !staticData.sheets) {
+            sheetTabs.innerHTML = '<div class="sheet-tabs-error">无法加载数据</div>';
+            return;
+        }
+        allSheets = staticData.sheets;
+        renderSheetTabs(staticData.sheets);
+        if (staticData.sheets.length > 0) {
+            switchSheetStatic(staticData.sheets[0].name);
+        }
+    }
+
     function renderSheetTabs(sheets) {
         sheetTabs.innerHTML = sheets.map(function(s) {
             return '<button class="sheet-tab" data-sheet="' + s.name + '" title="' + s.rows + '行 × ' + s.cols + '列">' +
@@ -352,16 +502,19 @@
     function switchSheet(sheetName) {
         currentSheet = sheetName;
 
-        // 更新标签激活状态
         sheetTabs.querySelectorAll('.sheet-tab').forEach(function(tab) {
             tab.classList.toggle('active', tab.dataset.sheet === sheetName);
         });
 
-        // 显示加载状态
         tableLoading.style.display = 'flex';
         tableLoading.innerHTML = '<div class="spinner"></div><p>加载中...</p>';
         excelTable.style.display = 'none';
         tableInfo.style.display = 'none';
+
+        if (useStaticData) {
+            switchSheetStatic(sheetName);
+            return;
+        }
 
         fetchWithRetry('/api/full-sheet?sheet=' + encodeURIComponent(sheetName))
             .then(function(res) { return res.json(); })
@@ -383,6 +536,26 @@
             });
     }
 
+    function switchSheetStatic(sheetName) {
+        currentSheet = sheetName;
+
+        sheetTabs.querySelectorAll('.sheet-tab').forEach(function(tab) {
+            tab.classList.toggle('active', tab.dataset.sheet === sheetName);
+        });
+
+        tableLoading.style.display = 'flex';
+        tableLoading.innerHTML = '<div class="spinner"></div><p>加载中...</p>';
+        excelTable.style.display = 'none';
+        tableInfo.style.display = 'none';
+
+        if (staticData && staticData.full_sheets && staticData.full_sheets[sheetName]) {
+            tableLoading.style.display = 'none';
+            renderFullTable(staticData.full_sheets[sheetName]);
+        } else {
+            tableLoading.innerHTML = '<p style="color:#ea4335;">⚠ Sheet "' + sheetName + '" 不存在</p>';
+        }
+    }
+
     function renderFullTable(tableData) {
         var headers = tableData.headers;
         var rows = tableData.rows;
@@ -390,15 +563,13 @@
         var total_rows = tableData.total_rows;
         var total_cols = tableData.total_cols;
 
-        // 渲染表头
         var headerHtml = ['<tr>'];
         headers.forEach(function(h) {
-            headerHtml.push('<th>' + h.label + '</th>');
+            headerHtml.push('<th>' + (h.label || '') + '</th>');
         });
         headerHtml.push('</tr>');
         excelTableHead.innerHTML = headerHtml.join('');
 
-        // 渲染数据行
         var bodyHtml = [];
         rows.forEach(function(row) {
             bodyHtml.push('<tr>');
@@ -406,7 +577,6 @@
                 var cls = '';
                 var displayVal = cell.value;
 
-                // 价格列高亮
                 if (cell.is_number && cell.value !== '0' && cell.value !== '' && (cell.col >= 7 && cell.col <= 11)) {
                     cls = ' class="price-cell"';
                     displayVal = Number(cell.value).toLocaleString();
@@ -418,7 +588,6 @@
         });
         excelTableBody.innerHTML = bodyHtml.join('');
 
-        // 显示表格信息
         tableInfo.style.display = 'block';
         tableInfo.textContent = 'Sheet: ' + sheet + ' | 共 ' + rows.length + ' 行数据 | ' + total_cols + ' 列';
 
@@ -427,6 +596,18 @@
 
     // ===== 导出Excel =====
     function exportExcel() {
+        if (useStaticData) {
+            // 静态模式：下载Excel原始文件
+            var link = document.createElement('a');
+            link.href = '报价-2025.9.9.xlsx';
+            link.download = '报价-2025.9.9.xlsx';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showExportToast();
+            return;
+        }
+
         var link = document.createElement('a');
         link.href = '/api/export';
         link.download = '报价-2025.9.9.xlsx';
@@ -460,7 +641,6 @@
             loginBtn.style.display = 'inline-block';
             logoutBtn.style.display = 'none';
         }
-        // 如果正在显示结果，刷新编辑区域
         if (currentItem && resultSection.style.display !== 'none') {
             if (isAdmin) {
                 editPriceSection.style.display = 'block';
@@ -490,6 +670,21 @@
             loginError.style.display = 'block';
             return;
         }
+
+        if (useStaticData) {
+            // 静态模式：前端校验密码
+            if (pwd === 'battery2025') {
+                isAdmin = true;
+                localStorage.setItem('battery_admin', 'true');
+                updateLoginUI();
+                closeLoginModal();
+            } else {
+                loginError.textContent = '密码错误';
+                loginError.style.display = 'block';
+            }
+            return;
+        }
+
         fetchWithRetry('/api/login?password=' + encodeURIComponent(pwd))
             .then(function(res) { return res.json(); })
             .then(function(data) {
@@ -563,7 +758,6 @@
         });
     });
 
-    // Sheet 标签切换（事件委托）
     sheetTabs.addEventListener('click', function(e) {
         var tab = e.target.closest('.sheet-tab');
         if (tab && tab.dataset.sheet) {
@@ -571,10 +765,8 @@
         }
     });
 
-    // 导出按钮
     exportBtn.addEventListener('click', exportExcel);
 
-    // 登录相关
     loginBtn.addEventListener('click', openLoginModal);
     logoutBtn.addEventListener('click', doLogout);
     closeLoginBtn.addEventListener('click', closeLoginModal);
@@ -584,15 +776,20 @@
     });
     loginModal.querySelector('.modal-overlay').addEventListener('click', closeLoginModal);
 
-    // ESC关闭登录框
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape' && loginModal.style.display === 'block') {
             closeLoginModal();
         }
     });
 
-    // 初始化：加载首页表格
-    loadSheetTabs();
+    // ===== 初始化 =====
+    updateLoginUI();
+    showEmpty();
     searchInput.focus();
+
+    // 先检测数据模式，再加载
+    initDataMode().then(function() {
+        loadSheetTabs();
+    });
 
 })();
