@@ -856,6 +856,14 @@ body {
 
 .sheet-tabs-error {
     color: var(--accent);
+    line-height: 1.6;
+}
+
+.sheet-tabs-error small {
+    display: block;
+    margin-top: 8px;
+    font-size: 12px;
+    line-height: 1.8;
 }
 
 /* 模态框表格容器 */

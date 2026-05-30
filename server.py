@@ -310,8 +310,11 @@ class RequestHandler(http.server.SimpleHTTPRequestHandler):
         super().__init__(*args, directory=STATIC_DIR, **kwargs)
     
     def log_message(self, format, *args):
-        # 抑制日志输出，避免干扰
-        pass
+        # 只记录错误和API请求
+        if args and len(args) > 1:
+            status = args[1] if len(args) > 1 else ''
+            if int(status) >= 400:
+                print(f"[{self.log_date_time_string()}] {format % args}")
     
     def do_GET(self):
         parsed = urllib.parse.urlparse(self.path)
@@ -383,15 +386,23 @@ class RequestHandler(http.server.SimpleHTTPRequestHandler):
             if not standard:
                 self.send_json({'error': '缺少标准名称'})
                 return
-            table_data = get_excel_table_data(standard)
-            if table_data:
-                self.send_json({'success': True, 'data': table_data})
-            else:
-                self.send_json({'success': False, 'message': '未找到对应标准的表格数据'})
+            try:
+                table_data = get_excel_table_data(standard)
+                if table_data:
+                    self.send_json({'success': True, 'data': table_data})
+                else:
+                    self.send_json({'success': False, 'message': '未找到对应标准的表格数据'})
+            except Exception as e:
+                print(f"获取table失败 (standard={standard}): {e}")
+                self.send_json({'success': False, 'message': f'读取表格数据失败: {str(e)}'}, 500)
         
         elif parsed.path == '/api/sheets':
-            sheets = get_all_sheets()
-            self.send_json({'success': True, 'data': sheets})
+            try:
+                sheets = get_all_sheets()
+                self.send_json({'success': True, 'data': sheets})
+            except Exception as e:
+                print(f"获取sheets失败: {e}")
+                self.send_json({'success': False, 'message': f'读取Excel失败: {str(e)}'}, 500)
         
         elif parsed.path == '/api/full-sheet':
             params = urllib.parse.parse_qs(parsed.query)
@@ -399,11 +410,15 @@ class RequestHandler(http.server.SimpleHTTPRequestHandler):
             if not sheet_name:
                 self.send_json({'success': False, 'message': '缺少sheet名称'})
                 return
-            data = get_full_sheet_data(sheet_name)
-            if data:
-                self.send_json({'success': True, 'data': data})
-            else:
-                self.send_json({'success': False, 'message': 'Sheet不存在'})
+            try:
+                data = get_full_sheet_data(sheet_name)
+                if data:
+                    self.send_json({'success': True, 'data': data})
+                else:
+                    self.send_json({'success': False, 'message': 'Sheet不存在'})
+            except Exception as e:
+                print(f"获取full-sheet失败 (sheet={sheet_name}): {e}")
+                self.send_json({'success': False, 'message': f'读取Sheet数据失败: {str(e)}'}, 500)
         
         elif parsed.path == '/api/export':
             # 直接返回Excel文件下载

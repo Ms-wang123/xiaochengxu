@@ -195,7 +195,7 @@
         excelTableBody.innerHTML = '';
         tableSheetName.textContent = '';
 
-        fetch('/api/table?standard=' + encodeURIComponent(standardName))
+        fetchWithRetry('/api/table?standard=' + encodeURIComponent(standardName))
             .then(res => res.json())
             .then(data => {
                 tableLoading.style.display = 'none';
@@ -209,7 +209,11 @@
             .catch(err => {
                 tableLoading.style.display = 'none';
                 tableError.style.display = 'block';
-                tableError.textContent = '⚠ 加载表格失败: ' + err.message;
+                let errMsg = err.message || '未知错误';
+                if (errMsg === 'Failed to fetch' || err.name === 'AbortError') {
+                    errMsg = '连接服务器失败，请确认服务器已启动';
+                }
+                tableError.textContent = '⚠ ' + errMsg;
             });
     }
 
@@ -377,10 +381,32 @@
         currentModalSheet = null;
     }
 
-    function loadSheetTabs() {
-        sheetTabs.innerHTML = '<div class="sheet-tabs-loading">加载Sheet列表...</div>';
+    // 通用 fetch 包装：带重试和超时
+    function fetchWithRetry(url, options, retries = 2) {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 30000); // 30秒超时
+        const fetchOptions = Object.assign({}, options, { signal: controller.signal });
 
-        fetch('/api/sheets')
+        return fetch(url, fetchOptions)
+            .then(res => {
+                clearTimeout(timeout);
+                return res;
+            })
+            .catch(err => {
+                clearTimeout(timeout);
+                if (retries > 0 && (err.name === 'AbortError' || err.message === 'Failed to fetch')) {
+                    console.warn('请求失败，重试中... 剩余重试次数:', retries);
+                    return new Promise(resolve => setTimeout(resolve, 1000))
+                        .then(() => fetchWithRetry(url, options, retries - 1));
+                }
+                throw err;
+            });
+    }
+
+    function loadSheetTabs() {
+        sheetTabs.innerHTML = '<div class="sheet-tabs-loading">⏳ 加载Sheet列表中...</div>';
+
+        fetchWithRetry('/api/sheets')
             .then(res => res.json())
             .then(data => {
                 if (data.success && data.data) {
@@ -391,11 +417,16 @@
                         switchSheet(data.data[0].name);
                     }
                 } else {
-                    sheetTabs.innerHTML = '<div class="sheet-tabs-error">加载失败</div>';
+                    sheetTabs.innerHTML = '<div class="sheet-tabs-error">⚠ 加载失败，请刷新重试</div>';
                 }
             })
             .catch(err => {
-                sheetTabs.innerHTML = '<div class="sheet-tabs-error">加载失败: ' + err.message + '</div>';
+                let errMsg = err.message || '未知错误';
+                let helpText = '';
+                if (errMsg === 'Failed to fetch' || err.name === 'AbortError') {
+                    helpText = '<br><small style="color:#5f6368;">💡 请确认：<br>1. 服务器是否已启动（python server.py）<br>2. 是否通过 http://localhost:8765 访问<br>3. 网络连接是否正常</small>';
+                }
+                sheetTabs.innerHTML = '<div class="sheet-tabs-error">⚠ 加载失败: ' + errMsg + helpText + '</div>';
             });
     }
 
@@ -416,23 +447,28 @@
         });
 
         // 显示加载状态
-        modalTableLoading.style.display = 'block';
+        modalTableLoading.style.display = 'flex';
+        modalTableLoading.innerHTML = '<div class="spinner"></div><p>加载中...</p>';
         modalExcelTable.style.display = 'none';
         modalTableInfo.style.display = 'none';
 
-        fetch('/api/full-sheet?sheet=' + encodeURIComponent(sheetName))
+        fetchWithRetry('/api/full-sheet?sheet=' + encodeURIComponent(sheetName))
             .then(res => res.json())
             .then(data => {
                 modalTableLoading.style.display = 'none';
                 if (data.success && data.data) {
                     renderFullTable(data.data);
                 } else {
-                    modalTableLoading.innerHTML = '<p style="color:#ea4335;">⚠ ' + (data.message || '加载失败') + '</p>';
+                    modalTableLoading.innerHTML = '<p style="color:#ea4335;">⚠ ' + (data.message || '加载失败，请刷新重试') + '</p>';
                 }
             })
             .catch(err => {
                 modalTableLoading.style.display = 'none';
-                modalTableLoading.innerHTML = '<p style="color:#ea4335;">⚠ 加载失败: ' + err.message + '</p>';
+                let errMsg = err.message || '未知错误';
+                if (errMsg === 'Failed to fetch' || err.name === 'AbortError') {
+                    errMsg = '连接服务器失败，请检查服务器是否运行';
+                }
+                modalTableLoading.innerHTML = '<p style="color:#ea4335;">⚠ ' + errMsg + '</p><p style="font-size:12px;color:#5f6368;margin-top:4px;">请确认通过 http://localhost:8765 访问</p>';
             });
     }
 
