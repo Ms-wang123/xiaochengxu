@@ -118,11 +118,11 @@ App({
 
   extractStandardId(name) {
     if (!name) return '';
-    let m = name.match(/(?:IEC|GB\/T|GB|UL|UN|QC\/T|SJ\/T|MT\/T)\s*[\d.]+/i);
-    if (m) return m[0];
-    m = name.match(/[A-Z]+\s*[\d.]+/);
-    if (m) return m[0];
-    m = name.match(/(\d{4,})/);
+    // 匹配 IEC62619、IEC 62619、IEC-62619 等格式
+    let m = name.match(/(?:IEC|GB\/T|GB|UL|UN|QC\/T|SJ\/T|MT\/T)[\s\-]?[\d.]+/i);
+    if (m) return m[0].replace(/[\s\-]/g, ''); // 去掉空格和连字符，统一为 IEC62619 格式
+    // 匹配纯数字编号（4位以上）
+    m = name.match(/(\d{5,})/);
     if (m) return m[1];
     return '';
   },
@@ -132,32 +132,33 @@ App({
     const q = query.trim().toLowerCase();
     if (!q) return [];
 
-    const index = this.globalData.searchIndex;
     const prices = this.globalData.prices;
     const seen = new Set();
     const results = [];
 
-    // 精确匹配
-    if (index[q]) {
-      index[q].forEach(idx => {
+    // 遍历所有数据项进行匹配
+    prices.forEach((item, idx) => {
+      const title = (item.title || '').toLowerCase();
+      const sheet = (item.sheet || '').toLowerCase();
+      
+      // 检查标题、sheet名是否包含查询词
+      if (title.indexOf(q) !== -1 || sheet.indexOf(q) !== -1) {
         if (!seen.has(idx)) {
           seen.add(idx);
-          results.push(prices[idx]);
+          results.push(item);
         }
-      });
-    }
-
-    // 模糊匹配
-    for (const key in index) {
-      if (key.toLowerCase().indexOf(q) !== -1) {
-        index[key].forEach(idx => {
-          if (!seen.has(idx)) {
-            seen.add(idx);
-            results.push(prices[idx]);
-          }
-        });
+        return;
       }
-    }
+      
+      // 检查标准编号（去掉空格后的纯数字匹配）
+      const stdId = this.extractStandardId(item.title || '');
+      if (stdId.toLowerCase().indexOf(q) !== -1 || stdId.replace(/[^\d]/g, '').indexOf(q) !== -1) {
+        if (!seen.has(idx)) {
+          seen.add(idx);
+          results.push(item);
+        }
+      }
+    });
 
     return results.slice(0, 20);
   },
