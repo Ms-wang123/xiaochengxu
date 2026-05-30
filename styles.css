@@ -223,9 +223,9 @@ body {
     color: var(--text-secondary);
 }
 
-/* ===== Result Section - 线性排版 ===== */
+/* ===== Result Section - 卡片式布局 ===== */
 .result-section {
-    padding: 20px;
+    padding: 16px;
     animation: fadeIn 0.3s ease;
 }
 
@@ -250,40 +250,98 @@ body {
     font-size: 17px;
     font-weight: 700;
     color: var(--primary);
-    padding: 4px 0 10px;
+    padding: 4px 0 12px;
     border-bottom: 2px solid var(--primary-light);
+    margin-bottom: 12px;
+}
+
+/* ===== 信息卡片网格 ===== */
+.info-cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.info-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 16px 12px;
+    text-align: center;
+    box-shadow: var(--shadow);
+    border: 1px solid #f0f0f0;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.info-card:active {
+    transform: scale(0.98);
+}
+
+.info-card-icon {
+    font-size: 28px;
+    margin-bottom: 6px;
+}
+
+.info-card-label {
+    font-size: 12px;
+    color: var(--text-tertiary);
     margin-bottom: 4px;
 }
 
-.rl-label {
+.info-card-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.5;
+    word-break: break-word;
+}
+
+.price-card {
+    background: linear-gradient(135deg, #fff5f5 0%, #fff0f0 100%);
+    border-color: #fecaca;
+}
+
+.price-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+/* ===== 可编辑价格区域 ===== */
+.edit-price-section {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+    border: 1px solid #f0f0f0;
+}
+
+.edit-price-title {
+    font-size: 14px;
     font-weight: 600;
     color: var(--text-secondary);
+    margin-bottom: 12px;
 }
 
-/* 可编辑价格行 */
-.editable-line {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 2px;
-    padding: 12px 0;
-    background: #fafcff;
-    margin: 4px -8px;
-    padding-left: 8px;
-    padding-right: 8px;
-    border-radius: var(--radius-sm);
-    border: 1px dashed var(--primary-light);
+.edit-price-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
 }
 
-.editable-line .rl-label {
-    margin-right: 2px;
+.edit-price-item label {
+    display: block;
+    font-size: 12px;
+    color: var(--text-tertiary);
+    margin-bottom: 6px;
 }
 
 .price-input {
-    width: 100px;
-    padding: 4px 8px;
+    width: 100%;
+    padding: 8px 12px;
     border: 1px solid var(--border);
-    border-radius: 4px;
+    border-radius: 8px;
     font-size: 14px;
     color: var(--text);
     background: var(--card-bg);
@@ -301,6 +359,41 @@ body {
     font-size: 13px;
 }
 
+/* ===== 详情卡片 ===== */
+.detail-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow);
+    border: 1px solid #f0f0f0;
+    animation: fadeIn 0.3s ease;
+}
+
+.detail-card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.detail-icon {
+    font-size: 18px;
+}
+
+.detail-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.detail-card-body {
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.6;
+    padding-left: 26px;
+}
+
 /* 保存按钮 */
 .save-area {
     margin-top: 16px;
@@ -308,6 +401,7 @@ body {
     align-items: center;
     gap: 12px;
     flex-wrap: wrap;
+    padding: 0 4px;
 }
 
 .save-btn {
@@ -473,8 +567,11 @@ body {
 /* ===== Excel 表格预览 ===== */
 .table-preview-section {
     margin-top: 20px;
-    border-top: 2px solid var(--primary-light);
-    padding-top: 16px;
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: var(--shadow);
+    border: 1px solid #f0f0f0;
 }
 
 .table-preview-header {
@@ -838,9 +935,15 @@ body {
 @media (max-width: 380px) {
     .header h1 { font-size: 16px; }
     .header-btn { font-size: 12px; padding: 5px 10px; }
-    .result-line { font-size: 14px; }
+    .result-section { padding: 12px; }
+    .info-cards { gap: 8px; }
+    .info-card { padding: 12px 8px; }
+    .info-card-icon { font-size: 24px; }
+    .info-card-value { font-size: 13px; }
+    .price-value { font-size: 16px; }
+    .edit-price-row { gap: 8px; }
+    .detail-card { padding: 12px; }
     .name-line { font-size: 15px; }
-    .price-input { width: 80px; }
     .excel-table { font-size: 11px; }
     .excel-table th, .excel-table td { padding: 4px; }
     .modal-content {

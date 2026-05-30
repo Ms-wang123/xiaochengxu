@@ -112,6 +112,22 @@
         // 周期
         document.getElementById('resultPeriod').textContent = item.period || '详见备注';
 
+        // 电芯价格卡片
+        const cellPriceCard = document.getElementById('resultCellPrice');
+        if (item.cellPrice && item.cellPrice !== '0') {
+            cellPriceCard.textContent = '¥' + Number(item.cellPrice).toLocaleString();
+        } else {
+            cellPriceCard.textContent = '--';
+        }
+
+        // 电池组价格卡片
+        const batteryPriceCard = document.getElementById('resultBatteryPrice');
+        if (item.batteryPrice && item.batteryPrice !== '0') {
+            batteryPriceCard.textContent = '¥' + Number(item.batteryPrice).toLocaleString();
+        } else {
+            batteryPriceCard.textContent = '--';
+        }
+
         // 价格 - 填入可编辑输入框
         const cellPriceEl = document.getElementById('editCellPrice');
         const batteryPriceEl = document.getElementById('editBatteryPrice');

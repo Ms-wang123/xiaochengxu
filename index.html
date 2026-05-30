@@ -38,48 +38,94 @@
             <div id="suggestions" class="suggestions" style="display:none;"></div>
         </div>
 
-        <!-- 结果区域 - 简洁线性排版 -->
+        <!-- 结果区域 - 卡片式布局 -->
         <div id="resultSection" class="result-section" style="display:none;">
+            <!-- 标准名称 -->
             <div class="result-line name-line" id="resultName"></div>
 
-            <div class="result-line">
-                <span class="rl-label">样品数量：</span>
-                <span id="resultSamples"></span>
+            <!-- 信息卡片网格 -->
+            <div class="info-cards">
+                <!-- 样品数量 -->
+                <div class="info-card">
+                    <div class="info-card-icon">🔬</div>
+                    <div class="info-card-label">样品数量</div>
+                    <div class="info-card-value" id="resultSamples"></div>
+                </div>
+
+                <!-- 检测周期 -->
+                <div class="info-card">
+                    <div class="info-card-icon">⏱️</div>
+                    <div class="info-card-label">检测周期</div>
+                    <div class="info-card-value" id="resultPeriod"></div>
+                </div>
+
+                <!-- 电芯价格 -->
+                <div class="info-card price-card">
+                    <div class="info-card-icon">💰</div>
+                    <div class="info-card-label">电芯价格</div>
+                    <div class="info-card-value price-value" id="resultCellPrice">--</div>
+                </div>
+
+                <!-- 电池组价格 -->
+                <div class="info-card price-card">
+                    <div class="info-card-icon">🔋</div>
+                    <div class="info-card-label">电池组/系统价格</div>
+                    <div class="info-card-value price-value" id="resultBatteryPrice">--</div>
+                </div>
             </div>
 
-            <div class="result-line">
-                <span class="rl-label">周期：</span>
-                <span id="resultPeriod"></span>
+            <!-- 可编辑价格区域 -->
+            <div class="edit-price-section">
+                <div class="edit-price-title">✏️ 修改报价</div>
+                <div class="edit-price-row">
+                    <div class="edit-price-item">
+                        <label>电芯价格</label>
+                        <input type="text" id="editCellPrice" class="price-input" placeholder="输入电芯价格">
+                    </div>
+                    <div class="edit-price-item">
+                        <label>电池组/系统价格</label>
+                        <input type="text" id="editBatteryPrice" class="price-input" placeholder="输入电池组价格">
+                    </div>
+                </div>
             </div>
 
-            <div class="result-line editable-line">
-                <span class="rl-label">价格：</span>
-                <span>电芯：</span>
-                <input type="text" id="editCellPrice" class="price-input" placeholder="输入电芯价格">
-                <span>，电池组/系统：</span>
-                <input type="text" id="editBatteryPrice" class="price-input" placeholder="输入电池组价格">
+            <!-- 证书费用 -->
+            <div class="detail-card" id="certFeeLine" style="display:none;">
+                <div class="detail-card-header">
+                    <span class="detail-icon">📜</span>
+                    <span class="detail-label">证书费用</span>
+                </div>
+                <div class="detail-card-body" id="resultCertFee"></div>
             </div>
 
-            <div class="result-line" id="industryLine" style="display:none;">
-                <span class="rl-label">行业比价：</span>
-                <span id="resultIndustryPrice"></span>
+            <!-- 行业参考报价 -->
+            <div class="detail-card" id="industryLine" style="display:none;">
+                <div class="detail-card-header">
+                    <span class="detail-icon">📊</span>
+                    <span class="detail-label">行业参考报价</span>
+                </div>
+                <div class="detail-card-body" id="resultIndustryPrice"></div>
             </div>
 
-            <div class="result-line" id="certFeeLine" style="display:none;">
-                <span class="rl-label">证书费：</span>
-                <span id="resultCertFee"></span>
+            <!-- 威凯/机构报价 -->
+            <div class="detail-card" id="totalPriceLine" style="display:none;">
+                <div class="detail-card-header">
+                    <span class="detail-icon">🏢</span>
+                    <span class="detail-label">威凯/机构报价</span>
+                </div>
+                <div class="detail-card-body" id="resultTotalPrice"></div>
             </div>
 
-            <div class="result-line" id="totalPriceLine" style="display:none;">
-                <span class="rl-label">威凯/机构报价：</span>
-                <span id="resultTotalPrice"></span>
+            <!-- 备注 -->
+            <div class="detail-card" id="remarkLine" style="display:none;">
+                <div class="detail-card-header">
+                    <span class="detail-icon">📝</span>
+                    <span class="detail-label">备注</span>
+                </div>
+                <div class="detail-card-body" id="resultRemark"></div>
             </div>
 
-            <div class="result-line" id="remarkLine" style="display:none;">
-                <span class="rl-label">备注：</span>
-                <span id="resultRemark"></span>
-            </div>
-
+            <!-- 保存区域 -->
             <div class="save-area">
                 <button id="saveBtn" class="save-btn">💾 保存价格到Excel</button>
                 <span id="saveMsg" class="save-msg"></span>
