@@ -2,8 +2,6 @@
 // 电池检测报价查询 - 主逻辑
 // ========================================
 
-// search_index 从 search_index.json 加载（全局变量）
-
 (function() {
     'use strict';
 
@@ -14,8 +12,11 @@
     const emptyState = document.getElementById('emptyState');
     const notFound = document.getElementById('notFound');
     const loadingEl = document.getElementById('loading');
+    const saveBtn = document.getElementById('saveBtn');
+    const saveMsg = document.getElementById('saveMsg');
 
     let debounceTimer = null;
+    let currentItem = null; // 当前查询结果
 
     // ===== 搜索逻辑 =====
     function search(query) {
@@ -38,7 +39,7 @@
             return;
         }
 
-        // 模糊匹配 - 在索引中搜索
+        // 模糊匹配
         if (typeof search_index !== 'undefined') {
             const matches = [];
             for (const [key, item] of Object.entries(search_index)) {
@@ -47,7 +48,6 @@
                 }
             }
 
-            // 去重
             const seen = new Set();
             const uniqueMatches = [];
             for (const m of matches) {
@@ -66,87 +66,79 @@
             }
         }
 
-        // 没找到
         showNotFound();
     }
 
     function showResult(item) {
         hideAll();
-        resultSection.style.display = 'flex';
+        currentItem = item;
+        resultSection.style.display = 'block';
         suggestionsEl.style.display = 'none';
 
         // 标准名称
-        document.getElementById('resultCategory').textContent = item.category || '';
-        document.getElementById('resultName').textContent = item.name || '';
+        document.getElementById('resultName').textContent = (item.category ? '[' + item.category + '] ' : '') + (item.name || '');
 
         // 样品数量
         const samples = [];
-        if (item.cellCount) samples.push('电芯: ' + item.cellCount);
-        if (item.batteryCount) samples.push('电池组/系统: ' + item.batteryCount);
-        document.getElementById('resultSamples').textContent = samples.join('\n') || '详见备注';
+        if (item.cellCount) samples.push('电芯' + item.cellCount);
+        if (item.batteryCount) samples.push('电池组/系统' + item.batteryCount);
+        document.getElementById('resultSamples').textContent = samples.join('，') || '详见备注';
 
         // 周期
         document.getElementById('resultPeriod').textContent = item.period || '详见备注';
 
-        // 电芯价格
-        document.getElementById('resultCellPrice').textContent = formatPrice(item.cellPrice);
+        // 价格 - 填入可编辑输入框
+        const cellPriceEl = document.getElementById('editCellPrice');
+        const batteryPriceEl = document.getElementById('editBatteryPrice');
+        cellPriceEl.value = formatPriceValue(item.cellPrice);
+        batteryPriceEl.value = formatPriceValue(item.batteryPrice);
 
-        // 电池组价格
-        document.getElementById('resultBatteryPrice').textContent = formatPrice(item.batteryPrice);
-
-        // 威凯/机构报价
-        const tpCard = document.getElementById('totalPriceCard');
-        if (item.totalPrice) {
-            tpCard.style.display = 'block';
-            document.getElementById('resultTotalPrice').textContent = item.totalPrice;
-        } else {
-            tpCard.style.display = 'none';
-        }
-
-        // 证书费用
-        const cfCard = document.getElementById('certFeeCard');
-        if (item.certFee) {
-            cfCard.style.display = 'block';
-            document.getElementById('resultCertFee').textContent = item.certFee;
-        } else {
-            cfCard.style.display = 'none';
-        }
-
-        // 行业参考报价
-        const indCard = document.getElementById('industryCard');
+        // 行业比价
+        const indLine = document.getElementById('industryLine');
         if (item.industryPrice) {
-            indCard.style.display = 'block';
+            indLine.style.display = 'block';
             document.getElementById('resultIndustryPrice').textContent = item.industryPrice;
         } else {
-            indCard.style.display = 'none';
+            indLine.style.display = 'none';
+        }
+
+        // 证书费
+        const certLine = document.getElementById('certFeeLine');
+        if (item.certFee) {
+            certLine.style.display = 'block';
+            document.getElementById('resultCertFee').textContent = item.certFee;
+        } else {
+            certLine.style.display = 'none';
+        }
+
+        // 威凯报价
+        const tpLine = document.getElementById('totalPriceLine');
+        if (item.totalPrice) {
+            tpLine.style.display = 'block';
+            document.getElementById('resultTotalPrice').textContent = item.totalPrice;
+        } else {
+            tpLine.style.display = 'none';
         }
 
         // 备注
-        const rmCard = document.getElementById('remarkCard');
+        const rmLine = document.getElementById('remarkLine');
         if (item.remark) {
-            rmCard.style.display = 'block';
+            rmLine.style.display = 'block';
             document.getElementById('resultRemark').textContent = item.remark;
         } else {
-            rmCard.style.display = 'none';
+            rmLine.style.display = 'none';
         }
 
-        // 滚动到结果
+        // 隐藏保存消息
+        saveMsg.textContent = '';
+        saveMsg.className = 'save-msg';
+
         resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
-    function formatPrice(price) {
-        if (!price || price === '0' || price === '') return '-';
-        // 如果已经是格式化好的文本（含换行等），直接返回
-        if (price.includes('\n') || price.includes('|') || price.length > 15) {
-            return price;
-        }
-        // 纯数字格式化
-        const num = parseFloat(price.replace(/[^\d.]/g, ''));
-        if (isNaN(num)) return price;
-        if (num >= 10000) {
-            return '¥' + (num / 10000).toFixed(num % 10000 === 0 ? 0 : 1) + '万';
-        }
-        return '¥' + num.toLocaleString();
+    function formatPriceValue(price) {
+        if (!price || price === '0' || price === '') return '';
+        return price;
     }
 
     function showSuggestions(matches) {
@@ -160,7 +152,6 @@
             </div>
         `).join('');
 
-        // 点击建议项
         suggestionsEl.querySelectorAll('.suggestion-item').forEach(el => {
             el.addEventListener('click', () => {
                 const id = el.dataset.id;
@@ -197,12 +188,62 @@
         suggestionsEl.style.display = 'none';
     }
 
+    // ===== 保存价格到Excel =====
+    saveBtn.addEventListener('click', function() {
+        if (!currentItem) return;
+
+        const cellPrice = document.getElementById('editCellPrice').value.trim();
+        const batteryPrice = document.getElementById('editBatteryPrice').value.trim();
+
+        if (!cellPrice && !batteryPrice) {
+            saveMsg.textContent = '请至少输入一个价格';
+            saveMsg.className = 'save-msg error';
+            return;
+        }
+
+        saveBtn.disabled = true;
+        saveBtn.textContent = '保存中...';
+        saveMsg.textContent = '';
+        saveMsg.className = 'save-msg';
+
+        // 调用后端API
+        fetch('/api/update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                standard: currentItem.name,
+                cellPrice: cellPrice,
+                batteryPrice: batteryPrice
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                saveMsg.textContent = '✓ ' + data.message;
+                saveMsg.className = 'save-msg success';
+                // 更新内存中的价格
+                if (cellPrice) currentItem.cellPrice = cellPrice;
+                if (batteryPrice) currentItem.batteryPrice = batteryPrice;
+            } else {
+                saveMsg.textContent = '✗ ' + data.message;
+                saveMsg.className = 'save-msg error';
+            }
+        })
+        .catch(err => {
+            saveMsg.textContent = '✗ 保存失败: ' + err.message;
+            saveMsg.className = 'save-msg error';
+        })
+        .finally(() => {
+            saveBtn.disabled = false;
+            saveBtn.textContent = '💾 保存价格到Excel';
+        });
+    });
+
     // ===== 事件处理 =====
     searchInput.addEventListener('input', function() {
         const val = this.value.trim();
         clearBtn.style.display = val ? 'flex' : 'none';
 
-        // 防抖搜索
         clearTimeout(debounceTimer);
         if (val) {
             loadingEl.style.display = 'block';
@@ -221,7 +262,6 @@
         }
     });
 
-    // 回车键
     searchInput.addEventListener('keydown', function(e) {
         if (e.key === 'Enter') {
             clearTimeout(debounceTimer);
@@ -230,7 +270,6 @@
         }
     });
 
-    // 清除按钮
     clearBtn.addEventListener('click', function() {
         searchInput.value = '';
         clearBtn.style.display = 'none';
@@ -238,7 +277,6 @@
         searchInput.focus();
     });
 
-    // 快捷标签
     document.querySelectorAll('.hint-tag').forEach(tag => {
         tag.addEventListener('click', function() {
             const hint = this.dataset.hint;
@@ -249,7 +287,6 @@
         });
     });
 
-    // 示例项目
     document.querySelectorAll('.example-item').forEach(item => {
         item.addEventListener('click', function() {
             const hint = this.dataset.hint;
@@ -260,13 +297,6 @@
         });
     });
 
-    // 页面加载时聚焦搜索框
     searchInput.focus();
-
-    // 处理浏览器后退/前进
-    window.addEventListener('popstate', function() {
-        const q = searchInput.value.trim();
-        if (q) search(q);
-    });
 
 })();

@@ -1,5 +1,5 @@
 /* ========================================
-   电池检测报价查询 - 样式表
+   电池检测报价查询 - 样式表 (简洁线性排版)
    ======================================== */
 
 :root {
@@ -8,16 +8,15 @@
     --primary-light: #e8f0fe;
     --accent: #ea4335;
     --success: #0f9d58;
-    --warning: #f9ab00;
     --text: #202124;
     --text-secondary: #5f6368;
     --text-tertiary: #9aa0a6;
     --bg: #f8f9fa;
     --card-bg: #ffffff;
     --border: #e0e0e0;
-    --radius: 16px;
-    --radius-sm: 10px;
-    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+    --radius: 8px;
+    --radius-sm: 6px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08);
     --shadow-lg: 0 4px 16px rgba(0,0,0,0.1);
     --safe-bottom: env(safe-area-inset-bottom, 16px);
 }
@@ -30,11 +29,11 @@ body {
     color: var(--text);
     -webkit-font-smoothing: antialiased;
     -webkit-tap-highlight-color: transparent;
-    line-height: 1.5;
+    line-height: 1.6;
 }
 
 #app {
-    max-width: 500px;
+    max-width: 600px;
     margin: 0 auto;
     min-height: 100vh;
     padding-bottom: var(--safe-bottom);
@@ -44,39 +43,33 @@ body {
 .header {
     background: linear-gradient(135deg, var(--primary), #4285f4);
     color: white;
-    padding: 20px 20px 24px;
+    padding: 16px 20px;
     position: sticky;
     top: 0;
     z-index: 100;
 }
 
-.header-inner h1 {
-    font-size: 22px;
+.header h1 {
+    font-size: 20px;
     font-weight: 700;
-    margin-bottom: 4px;
-}
-
-.header-sub {
-    font-size: 13px;
-    opacity: 0.85;
+    text-align: center;
 }
 
 /* ===== Search ===== */
 .search-section {
-    padding: 16px 16px 0;
+    padding: 12px 16px 8px;
     position: sticky;
-    top: 88px;
+    top: 56px;
     z-index: 99;
     background: var(--bg);
-    padding-bottom: 12px;
 }
 
 .search-box {
     display: flex;
     align-items: center;
     background: var(--card-bg);
-    border-radius: 28px;
-    padding: 4px 8px;
+    border-radius: 24px;
+    padding: 2px 6px;
     box-shadow: var(--shadow-lg);
     border: 2px solid transparent;
     transition: border-color 0.2s;
@@ -86,17 +79,12 @@ body {
     border-color: var(--primary);
 }
 
-.search-icon {
-    font-size: 20px;
-    padding: 0 8px 0 12px;
-}
-
 .search-input {
     flex: 1;
     border: none;
     outline: none;
-    font-size: 17px;
-    padding: 12px 4px;
+    font-size: 16px;
+    padding: 10px 12px;
     background: transparent;
     color: var(--text);
     min-width: 0;
@@ -104,29 +92,30 @@ body {
 
 .search-input::placeholder {
     color: var(--text-tertiary);
-    font-size: 15px;
+    font-size: 14px;
 }
 
 .clear-btn {
-    width: 32px;
-    height: 32px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
     border: none;
     background: #e0e0e0;
     color: #666;
-    font-size: 16px;
+    font-size: 14px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     margin-right: 4px;
+    flex-shrink: 0;
 }
 
 .search-hints {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-top: 12px;
+    margin-top: 10px;
     font-size: 13px;
     color: var(--text-secondary);
     flex-wrap: wrap;
@@ -159,7 +148,7 @@ body {
 }
 
 .suggestion-item {
-    padding: 14px 16px;
+    padding: 12px 16px;
     cursor: pointer;
     border-bottom: 1px solid #f0f0f0;
     display: flex;
@@ -167,23 +156,19 @@ body {
     gap: 10px;
 }
 
-.suggestion-item:last-child {
-    border-bottom: none;
-}
+.suggestion-item:last-child { border-bottom: none; }
 
-.suggestion-item:active {
-    background: var(--primary-light);
-}
+.suggestion-item:active { background: var(--primary-light); }
 
 .suggestion-code {
     font-weight: 700;
     color: var(--primary);
-    font-size: 15px;
-    min-width: 80px;
+    font-size: 14px;
+    min-width: 70px;
 }
 
 .suggestion-name {
-    font-size: 14px;
+    font-size: 13px;
     color: var(--text-secondary);
     flex: 1;
     overflow: hidden;
@@ -199,125 +184,139 @@ body {
     color: var(--text-secondary);
 }
 
-/* ===== Result Section ===== */
+/* ===== Result Section - 线性排版 ===== */
 .result-section {
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+    padding: 20px;
     animation: fadeIn 0.3s ease;
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(8px); }
+    from { opacity: 0; transform: translateY(6px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
-.name-card {
-    background: var(--card-bg);
-    border-radius: var(--radius);
-    padding: 18px 20px;
-    box-shadow: var(--shadow);
-}
-
-.name-badge {
-    display: inline-block;
-    background: var(--primary-light);
-    color: var(--primary);
-    padding: 3px 12px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 600;
-    margin-bottom: 10px;
-}
-
-.result-name {
-    font-size: 18px;
-    font-weight: 700;
+.result-line {
+    padding: 8px 0;
+    font-size: 15px;
+    line-height: 1.7;
+    border-bottom: 1px solid #f0f0f0;
     color: var(--text);
-    line-height: 1.4;
-    word-break: break-all;
 }
 
-/* ===== Info Grid ===== */
-.info-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
+.result-line:last-of-type {
+    border-bottom: none;
 }
 
-.info-card {
-    background: var(--card-bg);
-    border-radius: var(--radius-sm);
-    padding: 14px;
-    box-shadow: var(--shadow);
-    text-align: center;
-}
-
-.info-card.highlight {
-    border: 2px solid var(--primary-light);
-    background: #fafcff;
-}
-
-.info-icon {
-    font-size: 24px;
-    margin-bottom: 6px;
-}
-
-.info-label {
-    font-size: 12px;
-    color: var(--text-secondary);
+.name-line {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--primary);
+    padding: 4px 0 10px;
+    border-bottom: 2px solid var(--primary-light);
     margin-bottom: 4px;
 }
 
-.info-value {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--text);
-    white-space: pre-line;
-    line-height: 1.5;
-}
-
-.info-value.price {
-    color: var(--accent);
-    font-size: 20px;
-    font-weight: 700;
-}
-
-/* ===== Detail Cards ===== */
-.detail-card {
-    background: var(--card-bg);
-    border-radius: var(--radius-sm);
-    padding: 16px;
-    box-shadow: var(--shadow);
-}
-
-.detail-title {
-    font-size: 14px;
+.rl-label {
     font-weight: 600;
     color: var(--text-secondary);
-    margin-bottom: 8px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid #f0f0f0;
 }
 
-.detail-content {
+/* 可编辑价格行 */
+.editable-line {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 2px;
+    padding: 12px 0;
+    background: #fafcff;
+    margin: 4px -8px;
+    padding-left: 8px;
+    padding-right: 8px;
+    border-radius: var(--radius-sm);
+    border: 1px dashed var(--primary-light);
+}
+
+.editable-line .rl-label {
+    margin-right: 2px;
+}
+
+.price-input {
+    width: 100px;
+    padding: 4px 8px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
     font-size: 14px;
     color: var(--text);
-    line-height: 1.7;
-    white-space: pre-line;
-    word-break: break-all;
+    background: var(--card-bg);
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.price-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px var(--primary-light);
+}
+
+.price-input::placeholder {
+    color: var(--text-tertiary);
+    font-size: 13px;
+}
+
+/* 保存按钮 */
+.save-area {
+    margin-top: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.save-btn {
+    padding: 10px 24px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 24px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.save-btn:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(26,115,232,0.3);
+}
+
+.save-btn:active {
+    transform: scale(0.97);
+}
+
+.save-btn:disabled {
+    background: #a0c4f1;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.save-msg {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.save-msg.success {
+    color: var(--success);
+}
+
+.save-msg.error {
+    color: var(--accent);
 }
 
 /* ===== Empty State ===== */
 .empty-state {
-    padding: 40px 24px;
+    padding: 48px 24px;
     text-align: center;
-}
-
-.empty-icon {
-    font-size: 56px;
-    margin-bottom: 16px;
 }
 
 .empty-title {
@@ -375,11 +374,6 @@ body {
     text-align: center;
 }
 
-.not-found-icon {
-    font-size: 56px;
-    margin-bottom: 16px;
-}
-
 .not-found p {
     font-size: 16px;
     color: var(--text-secondary);
@@ -398,8 +392,8 @@ body {
 }
 
 .spinner {
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
     border: 3px solid #e0e0e0;
     border-top-color: var(--primary);
     border-radius: 50%;
@@ -416,17 +410,10 @@ body {
     color: var(--text-secondary);
 }
 
-/* ===== Footer ===== */
-.footer {
-    text-align: center;
-    padding: 24px;
-    font-size: 12px;
-    color: var(--text-tertiary);
-}
-
 /* ===== Responsive ===== */
 @media (max-width: 380px) {
-    .header-inner h1 { font-size: 19px; }
-    .info-grid { gap: 8px; }
-    .info-value.price { font-size: 17px; }
+    .header h1 { font-size: 18px; }
+    .result-line { font-size: 14px; }
+    .name-line { font-size: 15px; }
+    .price-input { width: 80px; }
 }
