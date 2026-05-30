@@ -44,25 +44,16 @@ App({
 
       this.globalData.prices = allPrices;
 
-      // 加载表格数据（可选，只加载部分）
+      // 加载表格数据
       const fullSheets = {};
-      const tableModules = {
-        'GB40165': './data/sheet_GB40165.js',
-        'GB标准': './data/sheet_GB标准.js',
-        'IEC': './data/sheet_IEC.js',
-        'UN38.3': './data/sheet_UN38.3.js',
-        '其他标准': './data/sheet_其他标准.js'
-      };
-
-      for (const sheetName in tableModules) {
-        try {
-          fullSheets[sheetName] = require(tableModules[sheetName]);
-        } catch (e) {
-          console.warn('表格加载失败:', sheetName, e.message);
-        }
-      }
+      try { fullSheets['GB40165'] = require('./data/sheet_GB40165.js'); } catch (e) { console.warn('GB40165表格加载失败:', e.message); }
+      try { fullSheets['GB标准'] = require('./data/sheet_GB标准.js'); } catch (e) { console.warn('GB标准表格加载失败:', e.message); }
+      try { fullSheets['IEC'] = require('./data/sheet_IEC.js'); } catch (e) { console.warn('IEC表格加载失败:', e.message); }
+      try { fullSheets['UN38.3'] = require('./data/sheet_UN38.3.js'); } catch (e) { console.warn('UN38.3表格加载失败:', e.message); }
+      try { fullSheets['其他标准'] = require('./data/sheet_其他标准.js'); } catch (e) { console.warn('其他标准表格加载失败:', e.message); }
 
       this.globalData.fullSheets = fullSheets;
+      console.log('已加载表格:', Object.keys(fullSheets));
 
       // 构建搜索索引
       this.buildSearchIndex();
