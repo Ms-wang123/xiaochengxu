@@ -1,0 +1,67 @@
+<!-- ========================================
+   详情页 - 显示标准报价详情
+   ======================================== -->
+<view class="page-detail" wx:if="{{item}}">
+  <!-- 标准名称 -->
+  <view class="detail-name card">
+    <view class="tag tag-blue detail-sheet">{{item.sheet}}</view>
+    <text class="detail-title">{{item.title}}</text>
+  </view>
+
+  <!-- 基本信息 -->
+  <view class="detail-info card">
+    <view class="info-row">
+      <text class="info-label">样品数量</text>
+      <text class="info-value">{{sampleText || '详见备注'}}</text>
+    </view>
+    <view class="info-row">
+      <text class="info-label">检测周期</text>
+      <text class="info-value">{{item.cycle || '详见备注'}}</text>
+    </view>
+    <view class="info-row" wx:if="{{priceText}}">
+      <text class="info-label">价格</text>
+      <text class="info-value info-price">{{priceText}}</text>
+    </view>
+  </view>
+
+  <!-- 威凯/机构报价 -->
+  <view class="detail-section card" wx:if="{{item.weikai_quote}}">
+    <view class="section-title">
+      <text class="section-icon">🏢</text>
+      <text>威凯/机构报价</text>
+    </view>
+    <view class="section-content">{{item.weikai_quote}}</view>
+  </view>
+
+  <!-- 行业比价 -->
+  <view class="detail-section card" wx:if="{{item.industry_price}}">
+    <view class="section-title">
+      <text class="section-icon">📊</text>
+      <text>行业比价</text>
+    </view>
+    <view class="section-content">{{item.industry_price}}</view>
+  </view>
+
+  <!-- 证书费用 -->
+  <view class="detail-section card" wx:if="{{item.cert_fee}}">
+    <view class="section-title">
+      <text class="section-icon">📋</text>
+      <text>证书费用</text>
+    </view>
+    <view class="section-content">{{item.cert_fee}}</view>
+  </view>
+
+  <!-- 备注 -->
+  <view class="detail-section card" wx:if="{{item.remarks}}">
+    <view class="section-title">
+      <text class="section-icon">📝</text>
+      <text>备注</text>
+    </view>
+    <view class="section-content">{{item.remarks}}</view>
+  </view>
+</view>
+
+<!-- 加载中 -->
+<view class="loading-wrap" wx:if="{{!item}}">
+  <text class="loading-text">加载中...</text>
+</view>

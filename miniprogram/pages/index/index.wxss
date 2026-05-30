@@ -1,0 +1,135 @@
+/* ========================================
+   首页样式
+   ======================================== */
+
+.page-index {
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+/* 搜索栏 */
+.search-bar {
+  padding: 20rpx 24rpx;
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.search-input-wrap {
+  display: flex;
+  align-items: center;
+  background: var(--card-bg);
+  border-radius: 40rpx;
+  padding: 8rpx 16rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.08);
+  border: 2rpx solid transparent;
+  transition: border-color 0.2s;
+}
+
+.search-icon {
+  width: 36rpx;
+  height: 36rpx;
+  margin-right: 12rpx;
+  opacity: 0.4;
+}
+
+.search-input {
+  flex: 1;
+  font-size: 28rpx;
+  color: var(--text);
+  height: 72rpx;
+  line-height: 72rpx;
+}
+
+.search-input::placeholder {
+  color: var(--text-tertiary);
+  font-size: 26rpx;
+}
+
+.search-clear {
+  width: 48rpx;
+  height: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #e8e8e8;
+  font-size: 24rpx;
+  color: #888;
+  flex-shrink: 0;
+}
+
+/* 搜索提示 */
+.hint-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+  padding: 16rpx 24rpx;
+}
+
+.hint-tag {
+  background: var(--primary-light);
+  color: var(--primary);
+  padding: 8rpx 24rpx;
+  border-radius: 28rpx;
+  font-size: 26rpx;
+  font-weight: 500;
+}
+
+.hint-tag:active {
+  background: var(--primary);
+  color: #fff;
+}
+
+/* 搜索结果列表 */
+.result-list {
+  padding: 0 24rpx;
+}
+
+.result-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24rpx;
+  margin-bottom: 12rpx;
+  position: relative;
+}
+
+.result-item:active {
+  background: #f5f8ff;
+}
+
+.result-header {
+  flex: 1;
+  min-width: 0;
+}
+
+.result-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.4;
+  margin-bottom: 8rpx;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.result-meta {
+  font-size: 24rpx;
+  color: var(--text-secondary);
+}
+
+.meta-sep {
+  margin: 0 8rpx;
+  color: #ddd;
+}
+
+.result-arrow {
+  font-size: 40rpx;
+  color: #ccc;
+  margin-left: 16rpx;
+  flex-shrink: 0;
+}

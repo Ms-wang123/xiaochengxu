@@ -1,0 +1,109 @@
+/* ========================================
+   电池检测报价查询 - 全局样式
+   ======================================== */
+
+page {
+  --primary: #1a73e8;
+  --primary-dark: #1557b0;
+  --primary-light: #e8f0fe;
+  --accent: #ea4335;
+  --success: #0f9d58;
+  --text: #202124;
+  --text-secondary: #5f6368;
+  --text-tertiary: #9aa0a6;
+  --bg: #f8f9fa;
+  --card-bg: #ffffff;
+  --border: #e0e0e0;
+
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 28rpx;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 通用容器 */
+.container {
+  padding: 24rpx;
+}
+
+/* 通用卡片 */
+.card {
+  background: var(--card-bg);
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+}
+
+/* 标签 */
+.tag {
+  display: inline-block;
+  padding: 4rpx 16rpx;
+  border-radius: 20rpx;
+  font-size: 22rpx;
+  font-weight: 500;
+}
+
+.tag-blue {
+  background: var(--primary-light);
+  color: var(--primary);
+}
+
+.tag-green {
+  background: #e6f4ea;
+  color: var(--success);
+}
+
+.tag-orange {
+  background: #fef7e0;
+  color: #e37400;
+}
+
+/* 分隔线 */
+.divider {
+  height: 1rpx;
+  background: #f0f0f0;
+  margin: 16rpx 0;
+}
+
+/* 加载状态 */
+.loading-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120rpx 0;
+}
+
+.loading-text {
+  margin-top: 20rpx;
+  font-size: 26rpx;
+  color: var(--text-secondary);
+}
+
+/* 空状态 */
+.empty-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120rpx 0;
+}
+
+.empty-icon {
+  font-size: 80rpx;
+  margin-bottom: 20rpx;
+}
+
+.empty-text {
+  font-size: 28rpx;
+  color: var(--text-secondary);
+}
+
+.empty-hint {
+  font-size: 24rpx;
+  color: var(--text-tertiary);
+  margin-top: 8rpx;
+}

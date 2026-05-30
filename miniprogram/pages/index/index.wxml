@@ -1,0 +1,67 @@
+<!-- ========================================
+   首页 - 搜索电池检测标准报价
+   ======================================== -->
+<view class="page-index">
+  <!-- 搜索栏 -->
+  <view class="search-bar">
+    <view class="search-input-wrap">
+      <image class="search-icon" src="/images/search.png" mode="aspectFit"></image>
+      <input
+        class="search-input"
+        placeholder="输入标准号，如 62619、31241、UN38.3..."
+        value="{{query}}"
+        bindinput="onInput"
+        bindconfirm="onSearch"
+        confirm-type="search"
+        focus="{{autoFocus}}"
+      />
+      <view class="search-clear" wx:if="{{query}}" bindtap="onClear">
+        <text>✕</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 搜索提示标签 -->
+  <view class="hint-tags" wx:if="{{!query}}">
+    <view class="hint-tag" data-hint="62619" bindtap="onTapHint">62619</view>
+    <view class="hint-tag" data-hint="31241" bindtap="onTapHint">31241</view>
+    <view class="hint-tag" data-hint="UN38.3" bindtap="onTapHint">UN38.3</view>
+    <view class="hint-tag" data-hint="62133" bindtap="onTapHint">62133</view>
+    <view class="hint-tag" data-hint="1642" bindtap="onTapHint">UL1642</view>
+  </view>
+
+  <!-- 搜索结果列表 -->
+  <view class="result-list" wx:if="{{results.length > 0}}">
+    <view class="result-item card" wx:for="{{results}}" wx:key="index" bindtap="onTapResult" data-index="{{index}}">
+      <view class="result-header">
+        <view class="result-title">{{item.title}}</view>
+        <view class="tag tag-blue">{{item.sheet}}</view>
+      </view>
+      <view class="result-meta">
+        <text wx:if="{{item.cell_price && item.cell_price !== '0'}}">电芯: ¥{{item.cell_price}}</text>
+        <text wx:if="{{item.battery_price && item.battery_price !== '0'}}" class="meta-sep"> | </text>
+        <text wx:if="{{item.battery_price && item.battery_price !== '0'}}">电池组: ¥{{item.battery_price}}</text>
+      </view>
+      <view class="result-arrow">›</view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-wrap" wx:if="{{!query && results.length === 0 && dataReady}}">
+    <text class="empty-icon">🔋</text>
+    <text class="empty-text">输入标准号开始查询</text>
+    <text class="empty-hint">支持 IEC、GB、UL、UN 等标准</text>
+  </view>
+
+  <!-- 无结果 -->
+  <view class="empty-wrap" wx:if="{{query && results.length === 0 && !searching}}">
+    <text class="empty-icon">🔍</text>
+    <text class="empty-text">未找到匹配的标准</text>
+    <text class="empty-hint">请尝试输入标准编号的数字部分，如 62619</text>
+  </view>
+
+  <!-- 加载中 -->
+  <view class="loading-wrap" wx:if="{{searching}}">
+    <text class="loading-text">搜索中...</text>
+  </view>
+</view>

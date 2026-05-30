@@ -1,0 +1,59 @@
+<!-- ========================================
+   表格浏览页 - 按标准分类浏览完整表格
+   ======================================== -->
+<view class="page-table">
+  <!-- Sheet 标签切换 -->
+  <scroll-view class="sheet-tabs" scroll-x enable-flex>
+    <view
+      class="sheet-tab {{currentSheet === item.name ? 'active' : ''}}"
+      wx:for="{{sheets}}"
+      wx:key="name"
+      data-sheet="{{item.name}}"
+      bindtap="onSwitchSheet"
+    >
+      {{item.name}}
+      <text class="sheet-count">({{item.rows}}行)</text>
+    </view>
+  </scroll-view>
+
+  <!-- 表格区域 -->
+  <scroll-view class="table-scroll-x" scroll-x wx:if="{{tableData}}" enable-flex>
+    <view class="table-wrap">
+      <!-- 表头 -->
+      <view class="table-header">
+        <view class="th" wx:for="{{tableHeaders}}" wx:key="col" style="min-width: {{colWidth}}rpx;">
+          {{item.label}}
+        </view>
+      </view>
+      <!-- 表体 -->
+      <view class="table-body">
+        <view class="table-row" wx:for="{{tableRows}}" wx:key="index">
+          <view
+            class="td {{cell.isPrice ? 'td-price' : ''}} {{cell.isWeikai ? 'td-weikai' : ''}}"
+            wx:for="{{item.cells}}"
+            wx:for-item="cell"
+            wx:key="col"
+            style="min-width: {{colWidth}}rpx;"
+          >
+            {{cell.display}}
+          </view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 加载中 -->
+  <view class="loading-wrap" wx:if="{{!tableData && dataReady}}">
+    <text class="loading-text">请选择上方分类查看表格</text>
+  </view>
+
+  <!-- 数据未就绪 -->
+  <view class="loading-wrap" wx:if="{{!dataReady}}">
+    <text class="loading-text">数据加载中...</text>
+  </view>
+
+  <!-- 表格信息 -->
+  <view class="table-info" wx:if="{{tableData}}">
+    <text>Sheet: {{currentSheet}} | 共 {{tableRows.length}} 行 | {{tableHeaders.length}} 列</text>
+  </view>
+</view>
