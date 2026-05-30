@@ -270,6 +270,9 @@ body {
 
 .result-value {
     color: var(--text);
+    white-space: pre-wrap;
+    word-break: break-word;
+    line-height: 1.6;
 }
 
 /* ===== 可编辑价格区域 ===== */

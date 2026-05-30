@@ -292,7 +292,7 @@
         var indLine = document.getElementById('industryLine');
         if (item.industryPrice) {
             indLine.style.display = 'block';
-            document.getElementById('resultIndustryPrice').textContent = item.industryPrice;
+            document.getElementById('resultIndustryPrice').innerHTML = formatMultiline(item.industryPrice);
         } else {
             indLine.style.display = 'none';
         }
@@ -300,7 +300,7 @@
         var certLine = document.getElementById('certFeeLine');
         if (item.certFee) {
             certLine.style.display = 'block';
-            document.getElementById('resultCertFee').textContent = item.certFee;
+            document.getElementById('resultCertFee').innerHTML = formatMultiline(item.certFee);
         } else {
             certLine.style.display = 'none';
         }
@@ -308,7 +308,7 @@
         var tpLine = document.getElementById('totalPriceLine');
         if (item.totalPrice) {
             tpLine.style.display = 'block';
-            document.getElementById('resultTotalPrice').textContent = item.totalPrice;
+            document.getElementById('resultTotalPrice').innerHTML = formatMultiline(item.totalPrice);
         } else {
             tpLine.style.display = 'none';
         }
@@ -316,7 +316,7 @@
         var rmLine = document.getElementById('remarkLine');
         if (item.remark) {
             rmLine.style.display = 'block';
-            document.getElementById('resultRemark').textContent = item.remark;
+            document.getElementById('resultRemark').innerHTML = formatMultiline(item.remark);
         } else {
             rmLine.style.display = 'none';
         }
@@ -334,6 +334,12 @@
         excelPathInfo.style.display = 'none';
 
         resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function formatMultiline(text) {
+        if (!text) return '';
+        // 将换行符转为 <br>，保留多行显示
+        return text.replace(/\n/g, '<br>');
     }
 
     function formatPriceValue(price) {
