@@ -16,6 +16,14 @@
     const saveMsg = document.getElementById('saveMsg');
     const excelPathInfo = document.getElementById('excelPathInfo');
 
+    // 表格相关
+    const tableWrapper = document.getElementById('tableWrapper');
+    const excelTableHead = document.getElementById('excelTableHead');
+    const excelTableBody = document.getElementById('excelTableBody');
+    const tableLoading = document.getElementById('tableLoading');
+    const tableError = document.getElementById('tableError');
+    const tableSheetName = document.getElementById('tableSheetName');
+
     let debounceTimer = null;
     let currentItem = null; // 当前查询结果
 
@@ -135,12 +143,91 @@
         saveMsg.className = 'save-msg';
         excelPathInfo.style.display = 'none';
 
+        // 加载Excel表格数据
+        loadTableData(item.name);
+
         resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     function formatPriceValue(price) {
         if (!price || price === '0' || price === '') return '';
         return price;
+    }
+
+    // ===== 加载并渲染Excel表格 =====
+    function loadTableData(standardName) {
+        // 显示加载状态
+        tableLoading.style.display = 'block';
+        tableError.style.display = 'none';
+        excelTableHead.innerHTML = '';
+        excelTableBody.innerHTML = '';
+        tableSheetName.textContent = '';
+
+        fetch('/api/table?standard=' + encodeURIComponent(standardName))
+            .then(res => res.json())
+            .then(data => {
+                tableLoading.style.display = 'none';
+                if (data.success && data.data) {
+                    renderTable(data.data);
+                } else {
+                    tableError.style.display = 'block';
+                    tableError.textContent = '⚠ ' + (data.message || '无法加载表格数据');
+                }
+            })
+            .catch(err => {
+                tableLoading.style.display = 'none';
+                tableError.style.display = 'block';
+                tableError.textContent = '⚠ 加载表格失败: ' + err.message;
+            });
+    }
+
+    function renderTable(tableData) {
+        const { headers, rows, sheet, title } = tableData;
+
+        // 显示sheet名称
+        tableSheetName.textContent = 'Sheet: ' + sheet;
+        tableSheetName.title = title;
+
+        // 渲染表头（两行合并显示）
+        const headerHtml = [];
+        headerHtml.push('<tr>');
+        headers.forEach(h => {
+            let label = h.label1;
+            if (h.label2 && h.label2 !== 'None') {
+                label += '<br><small>' + h.label2 + '</small>';
+            }
+            headerHtml.push('<th>' + label + '</th>');
+        });
+        headerHtml.push('</tr>');
+        excelTableHead.innerHTML = headerHtml.join('');
+
+        // 渲染数据行
+        const bodyHtml = [];
+        rows.forEach((row, rowIdx) => {
+            bodyHtml.push('<tr>');
+            row.cells.forEach(cell => {
+                let cls = '';
+                let displayVal = cell.value;
+
+                // 价格列(G=7, H=8)高亮
+                if (cell.col === 7 || cell.col === 8) {
+                    if (cell.is_number && cell.value !== '0' && cell.value !== '') {
+                        cls = ' class="price-cell"';
+                        displayVal = Number(cell.value).toLocaleString();
+                    }
+                }
+
+                // 威凯报价列(I=9) - 特殊处理换行
+                if (cell.col === 9 && cell.value) {
+                    cls = ' class="weikai-cell"';
+                    displayVal = cell.value.replace(/\n/g, '<br>');
+                }
+
+                bodyHtml.push('<td' + cls + '>' + displayVal + '</td>');
+            });
+            bodyHtml.push('</tr>');
+        });
+        excelTableBody.innerHTML = bodyHtml.join('');
     }
 
     function showSuggestions(matches) {
@@ -227,6 +314,8 @@
                 // 更新内存中的价格
                 if (cellPrice) currentItem.cellPrice = cellPrice;
                 if (batteryPrice) currentItem.batteryPrice = batteryPrice;
+                // 重新加载表格数据以反映最新更改
+                loadTableData(currentItem.name);
             } else {
                 saveMsg.textContent = '✗ ' + data.message;
                 saveMsg.className = 'save-msg error';

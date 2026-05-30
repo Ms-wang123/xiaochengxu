@@ -431,10 +431,134 @@ body {
     color: var(--text-secondary);
 }
 
+/* ===== Excel 表格预览 ===== */
+.table-preview-section {
+    margin-top: 20px;
+    border-top: 2px solid var(--primary-light);
+    padding-top: 16px;
+}
+
+.table-preview-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.table-preview-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.table-sheet-tag {
+    font-size: 12px;
+    background: var(--primary-light);
+    color: var(--primary);
+    padding: 2px 10px;
+    border-radius: 10px;
+    font-weight: 500;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--card-bg);
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.excel-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    min-width: 700px;
+}
+
+.excel-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
+.excel-table th {
+    background: #f1f5f9;
+    color: #334155;
+    font-weight: 600;
+    padding: 8px 6px;
+    border-bottom: 2px solid #cbd5e1;
+    text-align: center;
+    white-space: nowrap;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.excel-table th small {
+    display: block;
+    font-weight: 400;
+    color: #64748b;
+    font-size: 11px;
+}
+
+.excel-table td {
+    padding: 6px 8px;
+    border-bottom: 1px solid #f1f5f9;
+    color: var(--text);
+    vertical-align: top;
+    line-height: 1.5;
+    max-width: 200px;
+    word-break: break-word;
+}
+
+.excel-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+.excel-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* 价格列高亮 */
+.price-cell {
+    font-weight: 700;
+    color: #d97706;
+    background: #fffbeb;
+    text-align: right;
+    white-space: nowrap;
+}
+
+/* 威凯报价列 */
+.weikai-cell {
+    font-size: 12px;
+    color: #1e40af;
+    background: #eff6ff;
+    max-width: 250px;
+}
+
+.table-loading {
+    padding: 20px;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.table-error {
+    padding: 16px;
+    text-align: center;
+    color: var(--accent);
+    font-size: 14px;
+    background: #fef2f2;
+    border-radius: var(--radius-sm);
+}
+
 /* ===== Responsive ===== */
 @media (max-width: 380px) {
     .header h1 { font-size: 18px; }
     .result-line { font-size: 14px; }
     .name-line { font-size: 15px; }
     .price-input { width: 80px; }
+    .excel-table { font-size: 11px; }
+    .excel-table th, .excel-table td { padding: 4px; }
 }

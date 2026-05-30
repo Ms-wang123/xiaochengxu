@@ -83,6 +83,22 @@
                     📂 已保存至：<code>E:\weixin\报价-2025.9.9.xlsx</code>
                 </div>
             </div>
+
+            <!-- Excel 表格预览 -->
+            <div class="table-preview-section">
+                <div class="table-preview-header">
+                    <span class="table-preview-title">📋 Excel 表格预览</span>
+                    <span id="tableSheetName" class="table-sheet-tag"></span>
+                </div>
+                <div class="table-wrapper" id="tableWrapper">
+                    <table id="excelTable" class="excel-table">
+                        <thead id="excelTableHead"></thead>
+                        <tbody id="excelTableBody"></tbody>
+                    </table>
+                </div>
+                <div id="tableLoading" class="table-loading" style="display:none;">加载表格数据...</div>
+                <div id="tableError" class="table-error" style="display:none;"></div>
+            </div>
         </div>
 
         <!-- 空状态 -->

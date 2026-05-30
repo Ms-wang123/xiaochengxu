@@ -67,6 +67,56 @@ def find_standard_in_excel(standard_name):
     
     return None
 
+def get_excel_table_data(standard_name):
+    """从Excel获取标准的完整表格数据（用于前端展示）"""
+    info = find_standard_in_excel(standard_name)
+    if not info:
+        return None
+    
+    wb = openpyxl.load_workbook(EXCEL_PATH, data_only=True)
+    sheet = wb[info['sheet']]
+    
+    # 读取表头（第2行和第3行）
+    headers = []
+    for col_idx in range(1, min(sheet.max_column + 1, 13)):
+        h1 = sheet.cell(row=info['start_row'] + 1, column=col_idx).value
+        h2 = sheet.cell(row=info['start_row'] + 2, column=col_idx).value
+        if h1 or h2:
+            headers.append({
+                'col': col_idx,
+                'label1': str(h1) if h1 else '',
+                'label2': str(h2) if h2 else ''
+            })
+    
+    # 读取数据行
+    rows = []
+    for row_idx in range(info['start_row'] + 3, info['end_row'] + 1):
+        row_data = []
+        has_content = False
+        for col_idx in range(1, min(sheet.max_column + 1, 13)):
+            val = sheet.cell(row=row_idx, column=col_idx).value
+            if val is not None:
+                has_content = True
+            if isinstance(val, float) and val == int(val):
+                val = int(val)
+            row_data.append({
+                'col': col_idx,
+                'value': str(val) if val is not None else '',
+                'is_number': isinstance(val, (int, float)) and not isinstance(val, bool)
+            })
+        if has_content:
+            rows.append({'excel_row': row_idx, 'cells': row_data})
+    
+    wb.close()
+    
+    return {
+        'sheet': info['sheet'],
+        'title': sheet.cell(row=info['start_row'], column=1).value or '',
+        'headers': headers,
+        'rows': rows
+    }
+
+
 def get_excel_prices(standard_name):
     """从Excel获取标准的价格信息"""
     info = find_standard_in_excel(standard_name)
@@ -75,9 +125,6 @@ def get_excel_prices(standard_name):
     
     wb = openpyxl.load_workbook(EXCEL_PATH, data_only=True)
     sheet = wb[info['sheet']]
-    
-    # 读取标题行（第2行是表头，第3行是子表头）
-    # 列: A=序号 B=条款 C=试验项目 D=电芯数量 E=电池组数量 F=周期 G=单电芯价格 H=电池组价格 I=威凯报价 J=证书费 K=行业参考价 L=备注
     
     result = {
         'sheet': info['sheet'],
@@ -268,6 +315,18 @@ class RequestHandler(http.server.SimpleHTTPRequestHandler):
                 result['excel_title'] = excel_prices['title']
             
             self.send_json(result)
+        
+        elif parsed.path == '/api/table':
+            params = urllib.parse.parse_qs(parsed.query)
+            standard = params.get('standard', [''])[0]
+            if not standard:
+                self.send_json({'error': '缺少标准名称'})
+                return
+            table_data = get_excel_table_data(standard)
+            if table_data:
+                self.send_json({'success': True, 'data': table_data})
+            else:
+                self.send_json({'success': False, 'message': '未找到对应标准的表格数据'})
         
         elif parsed.path == '/api/update':
             params = urllib.parse.parse_qs(parsed.query)
