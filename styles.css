@@ -313,6 +313,27 @@ body {
     color: var(--accent);
 }
 
+/* Excel路径提示 */
+.excel-path-info {
+    width: 100%;
+    margin-top: 8px;
+    padding: 10px 14px;
+    background: #e8f5e9;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    color: #2e7d32;
+    animation: fadeIn 0.3s ease;
+}
+
+.excel-path-info code {
+    background: #c8e6c9;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: 'SF Mono', 'Consolas', monospace;
+    font-size: 12px;
+    word-break: break-all;
+}
+
 /* ===== Empty State ===== */
 .empty-state {
     padding: 48px 24px;

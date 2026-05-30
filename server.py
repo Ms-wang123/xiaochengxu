@@ -138,22 +138,23 @@ def update_excel_prices(standard_name, cell_price, battery_price):
     if cell_price_num is None and battery_price_num is None:
         return False, "请至少输入一个价格"
     
+    cell_price_int = int(cell_price_num) if cell_price_num is not None else None
+    battery_price_int = int(battery_price_num) if battery_price_num is not None else None
+    
     # 1. 更新 search_index.json
     index_path = os.path.join(STATIC_DIR, 'search_index.json')
     with open(index_path, 'r', encoding='utf-8') as f:
         content = f.read()
     
-    # 找到对应条目并更新价格
-    # 在JSON中搜索匹配的标准名称
     updated_index = False
     index_data = json.loads(re.search(r'var\s+search_index\s*=\s*(\{.*\})', content, re.DOTALL).group(1))
     
     for key, item in index_data.items():
         if item.get('name') == standard_name or item.get('id') == standard_name:
-            if cell_price_num is not None:
-                item['cellPrice'] = str(int(cell_price_num))
-            if battery_price_num is not None:
-                item['batteryPrice'] = str(int(battery_price_num))
+            if cell_price_int is not None:
+                item['cellPrice'] = str(cell_price_int)
+            if battery_price_int is not None:
+                item['batteryPrice'] = str(battery_price_int)
             updated_index = True
     
     if updated_index:
@@ -161,49 +162,32 @@ def update_excel_prices(standard_name, cell_price, battery_price):
         with open(index_path, 'w', encoding='utf-8') as f:
             f.write(new_content)
     
-    # 2. 更新 Excel
+    # 2. 更新 Excel - 在威凯报价(I列)第一个数据行添加/更新汇总价格
     info = find_standard_in_excel(standard_name)
     if info:
         wb = openpyxl.load_workbook(EXCEL_PATH)
         sheet = wb[info['sheet']]
         
-        # 在威凯报价列(I列)的第一个数据行添加/更新价格
         first_data_row = info['start_row'] + 3
         existing = sheet.cell(row=first_data_row, column=9).value
         
-        # 构建价格信息文本
-        price_parts = []
-        if cell_price_num is not None:
-            price_parts.append(f"电芯：{int(cell_price_num)}RMB")
-        if battery_price_num is not None:
-            price_parts.append(f"电池组/系统：{int(battery_price_num)}RMB")
-        price_text = "\n".join(price_parts)
-        
+        # 构建更新后的内容，先保留原始内容（排除之前追加的价格行），再追加新价格
+        original_lines = []
         if existing and isinstance(existing, str) and existing.strip():
-            # 检查是否已有价格行，有则替换
-            lines = existing.split('\n')
-            new_lines = []
-            has_cell = False
-            has_battery = False
-            for line in lines:
+            for line in existing.split('\n'):
                 stripped = line.strip()
-                if cell_price_num is not None and re.match(r'^电芯[：:]\s*', stripped):
-                    new_lines.append(f"电芯：{int(cell_price_num)}RMB")
-                    has_cell = True
-                elif battery_price_num is not None and re.match(r'^电池[组系/][：:]\s*', stripped):
-                    new_lines.append(f"电池组/系统：{int(battery_price_num)}RMB")
-                    has_battery = True
-                else:
-                    new_lines.append(line)
-            
-            if cell_price_num is not None and not has_cell:
-                new_lines.append(f"电芯：{int(cell_price_num)}RMB")
-            if battery_price_num is not None and not has_battery:
-                new_lines.append(f"电池组/系统：{int(battery_price_num)}RMB")
-            
-            sheet.cell(row=first_data_row, column=9).value = '\n'.join(new_lines)
-        else:
-            sheet.cell(row=first_data_row, column=9).value = price_text
+                # 过滤掉之前通过本系统追加的电芯/电池组价格行
+                if re.match(r'^电芯[：:]\s*\d+', stripped) or re.match(r'^电池组/系统[：:]\s*\d+', stripped) or re.match(r'^电池[组系]?[：:]\s*\d+', stripped):
+                    continue
+                original_lines.append(line)
+        
+        # 追加新的价格
+        if cell_price_int is not None:
+            original_lines.append(f"电芯：{cell_price_int}RMB")
+        if battery_price_int is not None:
+            original_lines.append(f"电池组/系统：{battery_price_int}RMB")
+        
+        sheet.cell(row=first_data_row, column=9).value = '\n'.join(original_lines)
         
         wb.save(EXCEL_PATH)
         wb.close()

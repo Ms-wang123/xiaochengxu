@@ -14,6 +14,7 @@
     const loadingEl = document.getElementById('loading');
     const saveBtn = document.getElementById('saveBtn');
     const saveMsg = document.getElementById('saveMsg');
+    const excelPathInfo = document.getElementById('excelPathInfo');
 
     let debounceTimer = null;
     let currentItem = null; // 当前查询结果
@@ -132,6 +133,7 @@
         // 隐藏保存消息
         saveMsg.textContent = '';
         saveMsg.className = 'save-msg';
+        excelPathInfo.style.display = 'none';
 
         resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
@@ -221,12 +223,14 @@
             if (data.success) {
                 saveMsg.textContent = '✓ ' + data.message;
                 saveMsg.className = 'save-msg success';
+                excelPathInfo.style.display = 'block';
                 // 更新内存中的价格
                 if (cellPrice) currentItem.cellPrice = cellPrice;
                 if (batteryPrice) currentItem.batteryPrice = batteryPrice;
             } else {
                 saveMsg.textContent = '✗ ' + data.message;
                 saveMsg.className = 'save-msg error';
+                excelPathInfo.style.display = 'none';
             }
         })
         .catch(err => {
