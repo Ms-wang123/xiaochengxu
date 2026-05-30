@@ -19,29 +19,76 @@ App({
     const app = this;
     wx.showLoading({ title: '加载数据中...', mask: true });
 
+    // 使用文件系统 API 读取大 JSON 文件
+    const fs = wx.getFileSystemManager();
+    const filePath = `${wx.env.USER_DATA_PATH}/data.json`;
+
+    const loadFromLocal = () => {
+      try {
+        const content = fs.readFileSync(filePath, 'utf8');
+        const data = JSON.parse(content);
+        app.processData(data);
+      } catch (err) {
+        console.error('读取本地数据失败:', err);
+        this.showError();
+      }
+    };
+
+    const copyAndLoad = () => {
+      try {
+        // 从项目目录复制到用户数据目录
+        fs.copyFileSync(
+          'data/data.json',
+          filePath
+        );
+        loadFromLocal();
+      } catch (err) {
+        console.error('复制数据文件失败:', err);
+        // 尝试直接 require（小文件兼容）
+        this.loadDataByRequire();
+      }
+    };
+
+    // 检查文件是否已存在
     try {
-      // 从本地 data.json 加载
-      const data = require('./data/data.json');
-      
-      app.globalData.prices = data.prices || [];
-      app.globalData.sheets = data.sheets || [];
-      app.globalData.fullSheets = data.full_sheets || {};
-      
-      // 构建搜索索引
-      app.buildSearchIndex();
-      
-      app.globalData.dataReady = true;
-      wx.hideLoading();
-      console.log('数据加载完成:', app.globalData.prices.length, '条标准,', app.globalData.sheets.length, '个Sheet');
-    } catch (err) {
-      wx.hideLoading();
-      wx.showModal({
-        title: '数据加载失败',
-        content: '请确保 data/data.json 文件存在且格式正确',
-        showCancel: false
-      });
-      console.error('数据加载失败:', err);
+      fs.accessSync(filePath);
+      loadFromLocal();
+    } catch {
+      copyAndLoad();
     }
+  },
+
+  loadDataByRequire() {
+    try {
+      const data = require('./data/data.json');
+      this.processData(data);
+    } catch (err) {
+      console.error('require 加载失败:', err);
+      this.showError();
+    }
+  },
+
+  processData(data) {
+    const app = this;
+    app.globalData.prices = data.prices || [];
+    app.globalData.sheets = data.sheets || [];
+    app.globalData.fullSheets = data.full_sheets || {};
+    
+    // 构建搜索索引
+    app.buildSearchIndex();
+    
+    app.globalData.dataReady = true;
+    wx.hideLoading();
+    console.log('数据加载完成:', app.globalData.prices.length, '条标准,', app.globalData.sheets.length, '个Sheet');
+  },
+
+  showError() {
+    wx.hideLoading();
+    wx.showModal({
+      title: '数据加载失败',
+      content: '请确保 data/data.json 文件存在且格式正确',
+      showCancel: false
+    });
   },
 
   buildSearchIndex() {
