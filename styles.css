@@ -43,16 +43,55 @@ body {
 .header {
     background: linear-gradient(135deg, var(--primary), #4285f4);
     color: white;
-    padding: 16px 20px;
+    padding: 12px 20px;
     position: sticky;
     top: 0;
     z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
 }
 
 .header h1 {
     font-size: 20px;
     font-weight: 700;
-    text-align: center;
+    white-space: nowrap;
+}
+
+.header-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.header-btn {
+    padding: 6px 14px;
+    border: 1px solid rgba(255,255,255,0.4);
+    border-radius: 20px;
+    background: rgba(255,255,255,0.15);
+    color: white;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.header-btn:hover {
+    background: rgba(255,255,255,0.3);
+    border-color: rgba(255,255,255,0.7);
+}
+
+.header-btn:active {
+    transform: scale(0.95);
+}
+
+.export-btn {
+    background: rgba(255,255,255,0.25);
+    border-color: rgba(255,255,255,0.5);
+    font-weight: 600;
 }
 
 /* ===== Search ===== */
@@ -553,12 +592,264 @@ body {
     border-radius: var(--radius-sm);
 }
 
+/* ===== 全局表格模态框 ===== */
+.full-table-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+}
+
+.modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    animation: fadeIn 0.2s ease;
+}
+
+.modal-content {
+    position: absolute;
+    top: 2%;
+    left: 2%;
+    right: 2%;
+    bottom: 2%;
+    background: var(--card-bg);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+}
+
+.modal-header h2 {
+    font-size: 18px;
+    color: var(--text);
+    white-space: nowrap;
+}
+
+.modal-header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.modal-header .header-btn {
+    background: var(--primary-light);
+    color: var(--primary);
+    border-color: var(--primary-light);
+    font-size: 13px;
+}
+
+.modal-header .export-btn {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.close-modal-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: #f0f0f0;
+    color: #666;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.close-modal-btn:hover {
+    background: #e0e0e0;
+    color: #333;
+}
+
+/* Sheet 标签栏 */
+.modal-body {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.sheet-tabs {
+    display: flex;
+    gap: 4px;
+    padding: 8px 16px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-bottom: 2px solid #f0f0f0;
+    flex-shrink: 0;
+    scroll-behavior: smooth;
+}
+
+.sheet-tabs::-webkit-scrollbar {
+    height: 3px;
+}
+
+.sheet-tabs::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 3px;
+}
+
+.sheet-tab {
+    padding: 8px 16px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: var(--card-bg);
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.sheet-tab:hover {
+    background: var(--primary-light);
+    color: var(--primary);
+    border-color: var(--primary-light);
+}
+
+.sheet-tab.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+    font-weight: 600;
+}
+
+.sheet-tab small {
+    font-size: 11px;
+    opacity: 0.7;
+    font-weight: 400;
+}
+
+.sheet-tabs-loading,
+.sheet-tabs-error {
+    padding: 12px 16px;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.sheet-tabs-error {
+    color: var(--accent);
+}
+
+/* 模态框表格容器 */
+.modal-table-wrapper {
+    flex: 1;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 0 16px;
+}
+
+.modal-table-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.modal-table-loading .spinner {
+    margin-bottom: 16px;
+}
+
+.modal-table-info {
+    padding: 8px 20px;
+    font-size: 12px;
+    color: var(--text-tertiary);
+    border-top: 1px solid #f0f0f0;
+    flex-shrink: 0;
+}
+
+/* 模态框内的表格全宽 */
+.modal-table-wrapper .excel-table {
+    min-width: 100%;
+    font-size: 12px;
+}
+
+.modal-table-wrapper .excel-table th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    padding: 6px 4px;
+    font-size: 11px;
+}
+
+.modal-table-wrapper .excel-table td {
+    padding: 4px 6px;
+    font-size: 12px;
+}
+
+/* 导出提示 Toast */
+.export-toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #333;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 24px;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 2000;
+    opacity: 0;
+    transition: all 0.3s ease;
+    pointer-events: none;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+}
+
+.export-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
 /* ===== Responsive ===== */
 @media (max-width: 380px) {
-    .header h1 { font-size: 18px; }
+    .header h1 { font-size: 16px; }
+    .header-btn { font-size: 12px; padding: 5px 10px; }
     .result-line { font-size: 14px; }
     .name-line { font-size: 15px; }
     .price-input { width: 80px; }
     .excel-table { font-size: 11px; }
     .excel-table th, .excel-table td { padding: 4px; }
+    .modal-content {
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border-radius: 0;
+    }
+    .modal-header h2 { font-size: 16px; }
+    .sheet-tab { font-size: 12px; padding: 6px 12px; }
 }

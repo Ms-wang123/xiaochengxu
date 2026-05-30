@@ -24,8 +24,24 @@
     const tableError = document.getElementById('tableError');
     const tableSheetName = document.getElementById('tableSheetName');
 
+    // 全局表格模态框相关
+    const fullTableModal = document.getElementById('fullTableModal');
+    const viewFullTableBtn = document.getElementById('viewFullTableBtn');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const sheetTabs = document.getElementById('sheetTabs');
+    const modalTableLoading = document.getElementById('modalTableLoading');
+    const modalExcelTable = document.getElementById('modalExcelTable');
+    const modalTableHead = document.getElementById('modalTableHead');
+    const modalTableBody = document.getElementById('modalTableBody');
+    const modalTableInfo = document.getElementById('modalTableInfo');
+    const modalRefreshBtn = document.getElementById('modalRefreshBtn');
+    const exportBtn = document.getElementById('exportBtn');
+    const modalExportBtn = document.getElementById('modalExportBtn');
+
     let debounceTimer = null;
     let currentItem = null; // 当前查询结果
+    let currentModalSheet = null; // 当前模态框中选中的sheet
+    let allSheets = []; // 所有sheet列表
 
     // ===== 搜索逻辑 =====
     function search(query) {
@@ -332,6 +348,144 @@
         });
     });
 
+    // ===== 全局表格模态框 =====
+    function openFullTableModal() {
+        fullTableModal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+        loadSheetTabs();
+    }
+
+    function closeFullTableModal() {
+        fullTableModal.style.display = 'none';
+        document.body.style.overflow = '';
+        currentModalSheet = null;
+    }
+
+    function loadSheetTabs() {
+        sheetTabs.innerHTML = '<div class="sheet-tabs-loading">加载Sheet列表...</div>';
+
+        fetch('/api/sheets')
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.data) {
+                    allSheets = data.data;
+                    renderSheetTabs(data.data);
+                    // 自动加载第一个sheet
+                    if (data.data.length > 0) {
+                        switchSheet(data.data[0].name);
+                    }
+                } else {
+                    sheetTabs.innerHTML = '<div class="sheet-tabs-error">加载失败</div>';
+                }
+            })
+            .catch(err => {
+                sheetTabs.innerHTML = '<div class="sheet-tabs-error">加载失败: ' + err.message + '</div>';
+            });
+    }
+
+    function renderSheetTabs(sheets) {
+        sheetTabs.innerHTML = sheets.map(s => 
+            '<button class="sheet-tab" data-sheet="' + s.name + '" title="' + s.rows + '行 × ' + s.cols + '列">' +
+            s.name + '<small>' + s.rows + '行</small>' +
+            '</button>'
+        ).join('');
+    }
+
+    function switchSheet(sheetName) {
+        currentModalSheet = sheetName;
+
+        // 更新标签激活状态
+        sheetTabs.querySelectorAll('.sheet-tab').forEach(tab => {
+            tab.classList.toggle('active', tab.dataset.sheet === sheetName);
+        });
+
+        // 显示加载状态
+        modalTableLoading.style.display = 'block';
+        modalExcelTable.style.display = 'none';
+        modalTableInfo.style.display = 'none';
+
+        fetch('/api/full-sheet?sheet=' + encodeURIComponent(sheetName))
+            .then(res => res.json())
+            .then(data => {
+                modalTableLoading.style.display = 'none';
+                if (data.success && data.data) {
+                    renderFullTable(data.data);
+                } else {
+                    modalTableLoading.innerHTML = '<p style="color:#ea4335;">⚠ ' + (data.message || '加载失败') + '</p>';
+                }
+            })
+            .catch(err => {
+                modalTableLoading.style.display = 'none';
+                modalTableLoading.innerHTML = '<p style="color:#ea4335;">⚠ 加载失败: ' + err.message + '</p>';
+            });
+    }
+
+    function renderFullTable(tableData) {
+        const { headers, rows, sheet, total_rows, total_cols } = tableData;
+
+        // 渲染表头
+        const headerHtml = ['<tr>'];
+        headers.forEach(h => {
+            headerHtml.push('<th>' + h.label + '</th>');
+        });
+        headerHtml.push('</tr>');
+        modalTableHead.innerHTML = headerHtml.join('');
+
+        // 渲染数据行
+        const bodyHtml = [];
+        rows.forEach((row, rowIdx) => {
+            bodyHtml.push('<tr>');
+            row.cells.forEach(cell => {
+                let cls = '';
+                let displayVal = cell.value;
+
+                // 价格列（通常第7-11列可能是价格列）高亮
+                if (cell.is_number && cell.value !== '0' && cell.value !== '' && (cell.col >= 7 && cell.col <= 11)) {
+                    cls = ' class="price-cell"';
+                    displayVal = Number(cell.value).toLocaleString();
+                }
+
+                bodyHtml.push('<td' + cls + '>' + displayVal + '</td>');
+            });
+            bodyHtml.push('</tr>');
+        });
+        modalTableBody.innerHTML = bodyHtml.join('');
+
+        // 显示表格信息
+        modalTableInfo.style.display = 'block';
+        modalTableInfo.textContent = 'Sheet: ' + sheet + ' | 共 ' + rows.length + ' 行数据 | ' + total_cols + ' 列';
+
+        modalExcelTable.style.display = 'table';
+    }
+
+    // ===== 导出Excel =====
+    function exportExcel() {
+        const link = document.createElement('a');
+        link.href = '/api/export';
+        link.download = '报价-2025.9.9.xlsx';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // 短暂提示
+        showExportToast();
+    }
+
+    function showExportToast() {
+        let toast = document.getElementById('exportToast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'exportToast';
+            toast.className = 'export-toast';
+            document.body.appendChild(toast);
+        }
+        toast.textContent = '✅ Excel 导出中...';
+        toast.classList.add('show');
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 2000);
+    }
+
     // ===== 事件处理 =====
     searchInput.addEventListener('input', function() {
         const val = this.value.trim();
@@ -389,6 +543,43 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
     });
+
+    // 查看完整表格按钮
+    viewFullTableBtn.addEventListener('click', openFullTableModal);
+
+    // 关闭模态框
+    closeModalBtn.addEventListener('click', closeFullTableModal);
+
+    // 点击遮罩层关闭
+    fullTableModal.querySelector('.modal-overlay').addEventListener('click', closeFullTableModal);
+
+    // ESC关闭
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && fullTableModal.style.display === 'block') {
+            closeFullTableModal();
+        }
+    });
+
+    // Sheet 标签切换（事件委托）
+    sheetTabs.addEventListener('click', function(e) {
+        const tab = e.target.closest('.sheet-tab');
+        if (tab && tab.dataset.sheet) {
+            switchSheet(tab.dataset.sheet);
+        }
+    });
+
+    // 刷新按钮
+    modalRefreshBtn.addEventListener('click', function() {
+        if (currentModalSheet) {
+            switchSheet(currentModalSheet);
+        } else {
+            loadSheetTabs();
+        }
+    });
+
+    // 导出按钮
+    exportBtn.addEventListener('click', exportExcel);
+    modalExportBtn.addEventListener('click', exportExcel);
 
     searchInput.focus();
 

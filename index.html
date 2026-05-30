@@ -14,6 +14,10 @@
         <!-- 顶部 -->
         <header class="header">
             <h1>电池检测报价查询</h1>
+            <div class="header-actions">
+                <button id="viewFullTableBtn" class="header-btn" title="查看完整Excel表格">📋 查看完整表格</button>
+                <button id="exportBtn" class="header-btn export-btn" title="导出Excel文件">📥 导出Excel</button>
+            </div>
         </header>
 
         <!-- 搜索区域 -->
@@ -131,6 +135,40 @@
         <div id="loading" class="loading" style="display:none;">
             <div class="spinner"></div>
             <p>查询中...</p>
+        </div>
+    </div>
+
+    <!-- 全局Excel表格预览（全屏模态框） -->
+    <div id="fullTableModal" class="full-table-modal" style="display:none;">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📊 完整报价表格</h2>
+                <div class="modal-header-right">
+                    <button id="modalExportBtn" class="header-btn export-btn">📥 导出Excel</button>
+                    <button id="modalRefreshBtn" class="header-btn" title="刷新数据">🔄 刷新</button>
+                    <button id="closeModalBtn" class="close-modal-btn">✕</button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <!-- Sheet 标签切换 -->
+                <div class="sheet-tabs" id="sheetTabs">
+                    <div class="sheet-tabs-loading">加载Sheet列表...</div>
+                </div>
+                <!-- 表格容器 -->
+                <div class="modal-table-wrapper" id="modalTableWrapper">
+                    <div class="modal-table-loading" id="modalTableLoading">
+                        <div class="spinner"></div>
+                        <p>请选择上方Sheet查看表格</p>
+                    </div>
+                    <table id="modalExcelTable" class="excel-table" style="display:none;">
+                        <thead id="modalTableHead"></thead>
+                        <tbody id="modalTableBody"></tbody>
+                    </table>
+                </div>
+                <!-- 表格信息 -->
+                <div class="modal-table-info" id="modalTableInfo" style="display:none;"></div>
+            </div>
         </div>
     </div>
 

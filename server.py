@@ -116,6 +116,67 @@ def get_excel_table_data(standard_name):
         'rows': rows
     }
 
+def get_all_sheets():
+    """获取Excel所有sheet名称和基本信息"""
+    wb = openpyxl.load_workbook(EXCEL_PATH, data_only=True)
+    sheets_info = []
+    for sheet_name in wb.sheetnames:
+        sheet = wb[sheet_name]
+        sheets_info.append({
+            'name': sheet_name,
+            'rows': sheet.max_row,
+            'cols': sheet.max_column
+        })
+    wb.close()
+    return sheets_info
+
+def get_full_sheet_data(sheet_name):
+    """获取指定sheet的完整表格数据"""
+    wb = openpyxl.load_workbook(EXCEL_PATH, data_only=True)
+    if sheet_name not in wb.sheetnames:
+        wb.close()
+        return None
+    
+    sheet = wb[sheet_name]
+    
+    # 读取表头（第一行）
+    headers = []
+    for col_idx in range(1, sheet.max_column + 1):
+        val = sheet.cell(row=1, column=col_idx).value
+        headers.append({
+            'col': col_idx,
+            'label': str(val) if val is not None else f'列{col_idx}'
+        })
+    
+    # 读取所有数据行
+    rows = []
+    for row_idx in range(2, sheet.max_row + 1):
+        row_data = []
+        has_content = False
+        for col_idx in range(1, sheet.max_column + 1):
+            val = sheet.cell(row=row_idx, column=col_idx).value
+            if val is not None:
+                has_content = True
+            if isinstance(val, float) and val == int(val):
+                val = int(val)
+            row_data.append({
+                'col': col_idx,
+                'value': str(val) if val is not None else '',
+                'is_number': isinstance(val, (int, float)) and not isinstance(val, bool)
+            })
+        if has_content:
+            rows.append({'excel_row': row_idx, 'cells': row_data})
+    
+    wb.close()
+    
+    return {
+        'sheet': sheet_name,
+        'headers': headers,
+        'rows': rows,
+        'total_rows': sheet.max_row,
+        'total_cols': sheet.max_column
+    }
+
 
 def get_excel_prices(standard_name):
     """从Excel获取标准的价格信息"""
@@ -327,6 +388,43 @@ class RequestHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_json({'success': True, 'data': table_data})
             else:
                 self.send_json({'success': False, 'message': '未找到对应标准的表格数据'})
+        
+        elif parsed.path == '/api/sheets':
+            sheets = get_all_sheets()
+            self.send_json({'success': True, 'data': sheets})
+        
+        elif parsed.path == '/api/full-sheet':
+            params = urllib.parse.parse_qs(parsed.query)
+            sheet_name = params.get('sheet', [''])[0]
+            if not sheet_name:
+                self.send_json({'success': False, 'message': '缺少sheet名称'})
+                return
+            data = get_full_sheet_data(sheet_name)
+            if data:
+                self.send_json({'success': True, 'data': data})
+            else:
+                self.send_json({'success': False, 'message': 'Sheet不存在'})
+        
+        elif parsed.path == '/api/export':
+            # 直接返回Excel文件下载
+            try:
+                file_size = os.path.getsize(EXCEL_PATH)
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                self.send_header('Content-Disposition', 'attachment; filename*=UTF-8\'\'%E6%8A%A5%E4%BB%B7-2025.9.9.xlsx')
+                self.send_header('Content-Length', str(file_size))
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.send_header('Cache-Control', 'no-cache')
+                self.end_headers()
+                with open(EXCEL_PATH, 'rb') as f:
+                    while True:
+                        chunk = f.read(8192)
+                        if not chunk:
+                            break
+                        self.wfile.write(chunk)
+            except Exception as e:
+                print(f"导出失败: {e}")
+            return
         
         elif parsed.path == '/api/update':
             params = urllib.parse.parse_qs(parsed.query)
