@@ -19,7 +19,7 @@ App({
 
     try {
       // 加载元数据（sheet列表）
-      const sheets = require('./data/meta.js');
+      const sheets = require('./data/meta.json');
       this.globalData.sheets = sheets;
 
       // 加载所有价格数据（使用JSON文件）
