@@ -15,8 +15,9 @@
         <header class="header">
             <h1>电池检测报价查询</h1>
             <div class="header-actions">
-                <button id="viewFullTableBtn" class="header-btn" title="查看完整Excel表格">📋 查看完整表格</button>
-                <button id="exportBtn" class="header-btn export-btn" title="导出Excel文件">📥 导出Excel</button>
+                <button id="exportBtn" class="header-btn export-btn" title="导出Excel文件">导出Excel</button>
+                <button id="loginBtn" class="header-btn" title="管理员登录">管理员登录</button>
+                <button id="logoutBtn" class="header-btn" style="display:none;" title="退出登录">退出</button>
             </div>
         </header>
 
@@ -38,45 +39,56 @@
             <div id="suggestions" class="suggestions" style="display:none;"></div>
         </div>
 
-        <!-- 结果区域 - 卡片式布局 -->
+        <!-- 结果区域 - 线性排版 -->
         <div id="resultSection" class="result-section" style="display:none;">
             <!-- 标准名称 -->
             <div class="result-line name-line" id="resultName"></div>
 
-            <!-- 信息卡片网格 -->
-            <div class="info-cards">
-                <!-- 样品数量 -->
-                <div class="info-card">
-                    <div class="info-card-icon">🔬</div>
-                    <div class="info-card-label">样品数量</div>
-                    <div class="info-card-value" id="resultSamples"></div>
-                </div>
-
-                <!-- 检测周期 -->
-                <div class="info-card">
-                    <div class="info-card-icon">⏱️</div>
-                    <div class="info-card-label">检测周期</div>
-                    <div class="info-card-value" id="resultPeriod"></div>
-                </div>
-
-                <!-- 电芯价格 -->
-                <div class="info-card price-card">
-                    <div class="info-card-icon">💰</div>
-                    <div class="info-card-label">电芯价格</div>
-                    <div class="info-card-value price-value" id="resultCellPrice">--</div>
-                </div>
-
-                <!-- 电池组价格 -->
-                <div class="info-card price-card">
-                    <div class="info-card-icon">🔋</div>
-                    <div class="info-card-label">电池组/系统价格</div>
-                    <div class="info-card-value price-value" id="resultBatteryPrice">--</div>
-                </div>
+            <!-- 样品数量 -->
+            <div class="result-line">
+                <span class="result-label">样品数量：</span>
+                <span class="result-value" id="resultSamples"></span>
             </div>
 
-            <!-- 可编辑价格区域 -->
-            <div class="edit-price-section">
-                <div class="edit-price-title">✏️ 修改报价</div>
+            <!-- 检测周期 -->
+            <div class="result-line">
+                <span class="result-label">周期：</span>
+                <span class="result-value" id="resultPeriod"></span>
+            </div>
+
+            <!-- 价格 -->
+            <div class="result-line">
+                <span class="result-label">价格：</span>
+                <span class="result-value" id="resultPrice"></span>
+            </div>
+
+            <!-- 行业比价 -->
+            <div class="result-line" id="industryLine" style="display:none;">
+                <span class="result-label">行业比价：</span>
+                <span class="result-value" id="resultIndustryPrice"></span>
+            </div>
+
+            <!-- 证书费 -->
+            <div class="result-line" id="certFeeLine" style="display:none;">
+                <span class="result-label">证书费：</span>
+                <span class="result-value" id="resultCertFee"></span>
+            </div>
+
+            <!-- 威凯/机构报价 -->
+            <div class="result-line" id="totalPriceLine" style="display:none;">
+                <span class="result-label">威凯/机构报价：</span>
+                <span class="result-value" id="resultTotalPrice"></span>
+            </div>
+
+            <!-- 备注 -->
+            <div class="result-line" id="remarkLine" style="display:none;">
+                <span class="result-label">备注：</span>
+                <span class="result-value" id="resultRemark"></span>
+            </div>
+
+            <!-- 管理员可编辑价格区域 -->
+            <div id="editPriceSection" class="edit-price-section" style="display:none;">
+                <div class="edit-price-title">修改报价</div>
                 <div class="edit-price-row">
                     <div class="edit-price-item">
                         <label>电芯价格</label>
@@ -87,88 +99,34 @@
                         <input type="text" id="editBatteryPrice" class="price-input" placeholder="输入电池组价格">
                     </div>
                 </div>
-            </div>
-
-            <!-- 证书费用 -->
-            <div class="detail-card" id="certFeeLine" style="display:none;">
-                <div class="detail-card-header">
-                    <span class="detail-icon">📜</span>
-                    <span class="detail-label">证书费用</span>
+                <div class="save-area">
+                    <button id="saveBtn" class="save-btn">保存价格到Excel</button>
+                    <span id="saveMsg" class="save-msg"></span>
+                    <div id="excelPathInfo" class="excel-path-info" style="display:none;">
+                        已保存至：<code>E:\weixin\报价-2025.9.9.xlsx</code>
+                    </div>
                 </div>
-                <div class="detail-card-body" id="resultCertFee"></div>
-            </div>
-
-            <!-- 行业参考报价 -->
-            <div class="detail-card" id="industryLine" style="display:none;">
-                <div class="detail-card-header">
-                    <span class="detail-icon">📊</span>
-                    <span class="detail-label">行业参考报价</span>
-                </div>
-                <div class="detail-card-body" id="resultIndustryPrice"></div>
-            </div>
-
-            <!-- 威凯/机构报价 -->
-            <div class="detail-card" id="totalPriceLine" style="display:none;">
-                <div class="detail-card-header">
-                    <span class="detail-icon">🏢</span>
-                    <span class="detail-label">威凯/机构报价</span>
-                </div>
-                <div class="detail-card-body" id="resultTotalPrice"></div>
-            </div>
-
-            <!-- 备注 -->
-            <div class="detail-card" id="remarkLine" style="display:none;">
-                <div class="detail-card-header">
-                    <span class="detail-icon">📝</span>
-                    <span class="detail-label">备注</span>
-                </div>
-                <div class="detail-card-body" id="resultRemark"></div>
-            </div>
-
-            <!-- 保存区域 -->
-            <div class="save-area">
-                <button id="saveBtn" class="save-btn">💾 保存价格到Excel</button>
-                <span id="saveMsg" class="save-msg"></span>
-                <div id="excelPathInfo" class="excel-path-info" style="display:none;">
-                    📂 已保存至：<code>E:\weixin\报价-2025.9.9.xlsx</code>
-                </div>
-            </div>
-
-            <!-- Excel 表格预览 -->
-            <div class="table-preview-section">
-                <div class="table-preview-header">
-                    <span class="table-preview-title">📋 Excel 表格预览</span>
-                    <span id="tableSheetName" class="table-sheet-tag"></span>
-                </div>
-                <div class="table-wrapper" id="tableWrapper">
-                    <table id="excelTable" class="excel-table">
-                        <thead id="excelTableHead"></thead>
-                        <tbody id="excelTableBody"></tbody>
-                    </table>
-                </div>
-                <div id="tableLoading" class="table-loading" style="display:none;">加载表格数据...</div>
-                <div id="tableError" class="table-error" style="display:none;"></div>
             </div>
         </div>
 
-        <!-- 空状态 -->
+        <!-- 空状态/首页 - Sheet标签 + 表格 -->
         <div id="emptyState" class="empty-state">
-            <p class="empty-title">输入标准号查询报价</p>
-            <p class="empty-desc">支持 GB、IEC、UL、UN38.3、CCC 等标准</p>
-            <div class="empty-examples">
-                <div class="example-item" data-hint="62619">
-                    <span class="example-code">IEC 62619</span>
-                    <span class="example-name">工业用锂蓄电池</span>
-                </div>
-                <div class="example-item" data-hint="31241">
-                    <span class="example-code">GB/T 31241</span>
-                    <span class="example-name">便携式移动电源</span>
-                </div>
-                <div class="example-item" data-hint="UN38.3">
-                    <span class="example-code">UN38.3</span>
-                    <span class="example-name">危险货物运输</span>
-                </div>
+            <!-- Sheet 标签切换 -->
+            <div class="sheet-tabs" id="sheetTabs">
+                <div class="sheet-tabs-loading">加载Sheet列表...</div>
             </div>
+            <!-- 表格容器 -->
+            <div class="table-wrapper" id="tableWrapper">
+                <div class="table-loading" id="tableLoading">
+                    <div class="spinner"></div>
+                    <p>请选择上方Sheet查看表格</p>
+                </div>
+                <table id="excelTable" class="excel-table" style="display:none;">
+                    <thead id="excelTableHead"></thead>
+                    <tbody id="excelTableBody"></tbody>
+                </table>
+            </div>
+            <div class="table-info" id="tableInfo" style="display:none;"></div>
         </div>
 
         <!-- 未找到 -->
@@ -184,36 +142,21 @@
         </div>
     </div>
 
-    <!-- 全局Excel表格预览（全屏模态框） -->
-    <div id="fullTableModal" class="full-table-modal" style="display:none;">
+    <!-- 登录模态框 -->
+    <div id="loginModal" class="login-modal" style="display:none;">
         <div class="modal-overlay"></div>
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>📊 完整报价表格</h2>
-                <div class="modal-header-right">
-                    <button id="modalExportBtn" class="header-btn export-btn">📥 导出Excel</button>
-                    <button id="modalRefreshBtn" class="header-btn" title="刷新数据">🔄 刷新</button>
-                    <button id="closeModalBtn" class="close-modal-btn">✕</button>
-                </div>
+        <div class="login-content">
+            <div class="login-header">
+                <h3>管理员登录</h3>
+                <button id="closeLoginBtn" class="close-modal-btn">✕</button>
             </div>
-            <div class="modal-body">
-                <!-- Sheet 标签切换 -->
-                <div class="sheet-tabs" id="sheetTabs">
-                    <div class="sheet-tabs-loading">加载Sheet列表...</div>
+            <div class="login-body">
+                <div class="login-field">
+                    <label>密码</label>
+                    <input type="password" id="loginPassword" class="login-input" placeholder="请输入管理员密码">
                 </div>
-                <!-- 表格容器 -->
-                <div class="modal-table-wrapper" id="modalTableWrapper">
-                    <div class="modal-table-loading" id="modalTableLoading">
-                        <div class="spinner"></div>
-                        <p>请选择上方Sheet查看表格</p>
-                    </div>
-                    <table id="modalExcelTable" class="excel-table" style="display:none;">
-                        <thead id="modalTableHead"></thead>
-                        <tbody id="modalTableBody"></tbody>
-                    </table>
-                </div>
-                <!-- 表格信息 -->
-                <div class="modal-table-info" id="modalTableInfo" style="display:none;"></div>
+                <div id="loginError" class="login-error" style="display:none;"></div>
+                <button id="doLoginBtn" class="login-submit">登录</button>
             </div>
         </div>
     </div>

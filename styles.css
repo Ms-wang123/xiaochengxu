@@ -1,5 +1,5 @@
 /* ========================================
-   电池检测报价查询 - 样式表 (简洁线性排版)
+   电池检测报价查询 - 样式表
    ======================================== */
 
 :root {
@@ -33,7 +33,7 @@ body {
 }
 
 #app {
-    max-width: 600px;
+    max-width: 100%;
     margin: 0 auto;
     min-height: 100vh;
     padding-bottom: var(--safe-bottom);
@@ -101,6 +101,9 @@ body {
     top: 56px;
     z-index: 99;
     background: var(--bg);
+    max-width: 600px;
+    margin: 0 auto;
+    width: 100%;
 }
 
 .search-box {
@@ -184,6 +187,9 @@ body {
     margin-top: 8px;
     box-shadow: var(--shadow-lg);
     overflow: hidden;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .suggestion-item {
@@ -223,10 +229,12 @@ body {
     color: var(--text-secondary);
 }
 
-/* ===== Result Section - 卡片式布局 ===== */
+/* ===== Result Section - 线性排版 ===== */
 .result-section {
     padding: 16px;
     animation: fadeIn 0.3s ease;
+    max-width: 600px;
+    margin: 0 auto;
 }
 
 @keyframes fadeIn {
@@ -242,7 +250,7 @@ body {
     color: var(--text);
 }
 
-.result-line:last-of-type {
+.result-line:last-child {
     border-bottom: none;
 }
 
@@ -252,59 +260,16 @@ body {
     color: var(--primary);
     padding: 4px 0 12px;
     border-bottom: 2px solid var(--primary-light);
-    margin-bottom: 12px;
+    margin-bottom: 8px;
 }
 
-/* ===== 信息卡片网格 ===== */
-.info-cards {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-    margin-bottom: 16px;
-}
-
-.info-card {
-    background: var(--card-bg);
-    border-radius: 12px;
-    padding: 16px 12px;
-    text-align: center;
-    box-shadow: var(--shadow);
-    border: 1px solid #f0f0f0;
-    transition: transform 0.15s, box-shadow 0.15s;
-}
-
-.info-card:active {
-    transform: scale(0.98);
-}
-
-.info-card-icon {
-    font-size: 28px;
-    margin-bottom: 6px;
-}
-
-.info-card-label {
-    font-size: 12px;
-    color: var(--text-tertiary);
-    margin-bottom: 4px;
-}
-
-.info-card-value {
-    font-size: 14px;
+.result-label {
     font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.result-value {
     color: var(--text);
-    line-height: 1.5;
-    word-break: break-word;
-}
-
-.price-card {
-    background: linear-gradient(135deg, #fff5f5 0%, #fff0f0 100%);
-    border-color: #fecaca;
-}
-
-.price-value {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--accent);
 }
 
 /* ===== 可编辑价格区域 ===== */
@@ -312,7 +277,7 @@ body {
     background: var(--card-bg);
     border-radius: 12px;
     padding: 16px;
-    margin-bottom: 16px;
+    margin-top: 16px;
     box-shadow: var(--shadow);
     border: 1px solid #f0f0f0;
 }
@@ -359,41 +324,6 @@ body {
     font-size: 13px;
 }
 
-/* ===== 详情卡片 ===== */
-.detail-card {
-    background: var(--card-bg);
-    border-radius: 12px;
-    padding: 14px 16px;
-    margin-bottom: 12px;
-    box-shadow: var(--shadow);
-    border: 1px solid #f0f0f0;
-    animation: fadeIn 0.3s ease;
-}
-
-.detail-card-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 8px;
-}
-
-.detail-icon {
-    font-size: 18px;
-}
-
-.detail-label {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--text-secondary);
-}
-
-.detail-card-body {
-    font-size: 14px;
-    color: var(--text);
-    line-height: 1.6;
-    padding-left: 26px;
-}
-
 /* 保存按钮 */
 .save-area {
     margin-top: 16px;
@@ -401,7 +331,6 @@ body {
     align-items: center;
     gap: 12px;
     flex-wrap: wrap;
-    padding: 0 4px;
 }
 
 .save-btn {
@@ -467,142 +396,94 @@ body {
     word-break: break-all;
 }
 
-/* ===== Empty State ===== */
+/* ===== Empty State / 首页 ===== */
 .empty-state {
-    padding: 48px 24px;
-    text-align: center;
+    padding: 0;
 }
 
-.empty-title {
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 8px;
-}
-
-.empty-desc {
-    font-size: 14px;
-    color: var(--text-secondary);
-    margin-bottom: 24px;
-}
-
-.empty-examples {
+/* ===== Sheet 标签栏 ===== */
+.sheet-tabs {
     display: flex;
-    flex-direction: column;
-    gap: 8px;
-    max-width: 300px;
-    margin: 0 auto;
-}
-
-.example-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    gap: 4px;
+    padding: 8px 16px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-bottom: 2px solid #f0f0f0;
     background: var(--card-bg);
-    padding: 12px 16px;
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    box-shadow: var(--shadow);
-    transition: all 0.15s;
+    scroll-behavior: smooth;
 }
 
-.example-item:active {
-    background: var(--primary-light);
-    transform: scale(0.98);
+.sheet-tabs::-webkit-scrollbar {
+    height: 3px;
 }
 
-.example-code {
-    font-weight: 700;
-    color: var(--primary);
-    font-size: 15px;
+.sheet-tabs::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 3px;
 }
 
-.example-name {
-    font-size: 13px;
-    color: var(--text-secondary);
-}
-
-/* ===== Not Found ===== */
-.not-found {
-    padding: 60px 24px;
-    text-align: center;
-}
-
-.not-found p {
-    font-size: 16px;
-    color: var(--text-secondary);
-}
-
-.not-found-hint {
-    font-size: 13px;
-    margin-top: 8px;
-    color: var(--text-tertiary);
-}
-
-/* ===== Loading ===== */
-.loading {
-    padding: 40px;
-    text-align: center;
-}
-
-.spinner {
-    width: 32px;
-    height: 32px;
-    border: 3px solid #e0e0e0;
-    border-top-color: var(--primary);
-    border-radius: 50%;
-    margin: 0 auto 12px;
-    animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-.loading p {
-    font-size: 14px;
-    color: var(--text-secondary);
-}
-
-/* ===== Excel 表格预览 ===== */
-.table-preview-section {
-    margin-top: 20px;
+.sheet-tab {
+    padding: 8px 16px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
     background: var(--card-bg);
-    border-radius: 12px;
-    padding: 16px;
-    box-shadow: var(--shadow);
-    border: 1px solid #f0f0f0;
-}
-
-.table-preview-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 10px;
-}
-
-.table-preview-title {
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--text);
-}
-
-.table-sheet-tag {
-    font-size: 12px;
-    background: var(--primary-light);
-    color: var(--primary);
-    padding: 2px 10px;
-    border-radius: 10px;
+    color: var(--text-secondary);
+    font-size: 13px;
     font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
 }
 
+.sheet-tab:hover {
+    background: var(--primary-light);
+    color: var(--primary);
+    border-color: var(--primary-light);
+}
+
+.sheet-tab.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+    font-weight: 600;
+}
+
+.sheet-tab small {
+    font-size: 11px;
+    opacity: 0.7;
+    font-weight: 400;
+}
+
+.sheet-tabs-loading,
+.sheet-tabs-error {
+    padding: 12px 16px;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.sheet-tabs-error {
+    color: var(--accent);
+    line-height: 1.6;
+}
+
+.sheet-tabs-error small {
+    display: block;
+    margin-top: 8px;
+    font-size: 12px;
+    line-height: 1.8;
+}
+
+/* ===== 表格 ===== */
 .table-wrapper {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
     background: var(--card-bg);
-    max-height: 60vh;
+    max-height: 70vh;
     overflow-y: auto;
 }
 
@@ -674,10 +555,25 @@ body {
 }
 
 .table-loading {
-    padding: 20px;
-    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
     color: var(--text-secondary);
     font-size: 14px;
+}
+
+.table-loading .spinner {
+    margin-bottom: 16px;
+}
+
+.table-info {
+    padding: 8px 20px;
+    font-size: 12px;
+    color: var(--text-tertiary);
+    border-top: 1px solid #f0f0f0;
+    background: var(--card-bg);
 }
 
 .table-error {
@@ -689,8 +585,54 @@ body {
     border-radius: var(--radius-sm);
 }
 
-/* ===== 全局表格模态框 ===== */
-.full-table-modal {
+/* ===== Not Found ===== */
+.not-found {
+    padding: 60px 24px;
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.not-found p {
+    font-size: 16px;
+    color: var(--text-secondary);
+}
+
+.not-found-hint {
+    font-size: 13px;
+    margin-top: 8px;
+    color: var(--text-tertiary);
+}
+
+/* ===== Loading ===== */
+.loading {
+    padding: 40px;
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid #e0e0e0;
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    margin: 0 auto 12px;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.loading p {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+/* ===== 登录模态框 ===== */
+.login-modal {
     position: fixed;
     top: 0;
     left: 0;
@@ -699,7 +641,7 @@ body {
     z-index: 1000;
 }
 
-.modal-overlay {
+.login-modal .modal-overlay {
     position: absolute;
     top: 0;
     left: 0;
@@ -709,210 +651,107 @@ body {
     animation: fadeIn 0.2s ease;
 }
 
-.modal-content {
+.login-content {
     position: absolute;
-    top: 2%;
-    left: 2%;
-    right: 2%;
-    bottom: 2%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     background: var(--card-bg);
     border-radius: 12px;
-    display: flex;
-    flex-direction: column;
+    width: 90%;
+    max-width: 360px;
     box-shadow: 0 20px 60px rgba(0,0,0,0.3);
     animation: slideUp 0.3s ease;
 }
 
-@keyframes slideUp {
-    from { opacity: 0; transform: translateY(30px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.modal-header {
+.login-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 16px 20px;
     border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
 }
 
-.modal-header h2 {
+.login-header h3 {
     font-size: 18px;
     color: var(--text);
-    white-space: nowrap;
 }
 
-.modal-header-right {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+.login-body {
+    padding: 20px;
 }
 
-.modal-header .header-btn {
-    background: var(--primary-light);
-    color: var(--primary);
-    border-color: var(--primary-light);
+.login-field {
+    margin-bottom: 16px;
+}
+
+.login-field label {
+    display: block;
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+}
+
+.login-input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 15px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.login-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px var(--primary-light);
+}
+
+.login-error {
+    padding: 8px 12px;
+    background: #fef2f2;
+    color: var(--accent);
+    border-radius: 6px;
     font-size: 13px;
+    margin-bottom: 12px;
 }
 
-.modal-header .export-btn {
+.login-submit {
+    width: 100%;
+    padding: 12px;
     background: var(--primary);
     color: white;
-    border-color: var(--primary);
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.login-submit:hover {
+    background: var(--primary-dark);
 }
 
 .close-modal-btn {
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     border: none;
     background: #f0f0f0;
     color: #666;
-    font-size: 18px;
+    font-size: 16px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.2s;
-    flex-shrink: 0;
 }
 
 .close-modal-btn:hover {
     background: #e0e0e0;
     color: #333;
-}
-
-/* Sheet 标签栏 */
-.modal-body {
-    flex: 1;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-}
-
-.sheet-tabs {
-    display: flex;
-    gap: 4px;
-    padding: 8px 16px;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    border-bottom: 2px solid #f0f0f0;
-    flex-shrink: 0;
-    scroll-behavior: smooth;
-}
-
-.sheet-tabs::-webkit-scrollbar {
-    height: 3px;
-}
-
-.sheet-tabs::-webkit-scrollbar-thumb {
-    background: #ccc;
-    border-radius: 3px;
-}
-
-.sheet-tab {
-    padding: 8px 16px;
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    background: var(--card-bg);
-    color: var(--text-secondary);
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: all 0.15s;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex-shrink: 0;
-}
-
-.sheet-tab:hover {
-    background: var(--primary-light);
-    color: var(--primary);
-    border-color: var(--primary-light);
-}
-
-.sheet-tab.active {
-    background: var(--primary);
-    color: white;
-    border-color: var(--primary);
-    font-weight: 600;
-}
-
-.sheet-tab small {
-    font-size: 11px;
-    opacity: 0.7;
-    font-weight: 400;
-}
-
-.sheet-tabs-loading,
-.sheet-tabs-error {
-    padding: 12px 16px;
-    color: var(--text-secondary);
-    font-size: 14px;
-}
-
-.sheet-tabs-error {
-    color: var(--accent);
-    line-height: 1.6;
-}
-
-.sheet-tabs-error small {
-    display: block;
-    margin-top: 8px;
-    font-size: 12px;
-    line-height: 1.8;
-}
-
-/* 模态框表格容器 */
-.modal-table-wrapper {
-    flex: 1;
-    overflow: auto;
-    -webkit-overflow-scrolling: touch;
-    padding: 0 16px;
-}
-
-.modal-table-loading {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 60px 20px;
-    color: var(--text-secondary);
-    font-size: 14px;
-}
-
-.modal-table-loading .spinner {
-    margin-bottom: 16px;
-}
-
-.modal-table-info {
-    padding: 8px 20px;
-    font-size: 12px;
-    color: var(--text-tertiary);
-    border-top: 1px solid #f0f0f0;
-    flex-shrink: 0;
-}
-
-/* 模态框内的表格全宽 */
-.modal-table-wrapper .excel-table {
-    min-width: 100%;
-    font-size: 12px;
-}
-
-.modal-table-wrapper .excel-table th {
-    position: sticky;
-    top: 0;
-    z-index: 2;
-    padding: 6px 4px;
-    font-size: 11px;
-}
-
-.modal-table-wrapper .excel-table td {
-    padding: 4px 6px;
-    font-size: 12px;
 }
 
 /* 导出提示 Toast */
@@ -944,23 +783,10 @@ body {
     .header h1 { font-size: 16px; }
     .header-btn { font-size: 12px; padding: 5px 10px; }
     .result-section { padding: 12px; }
-    .info-cards { gap: 8px; }
-    .info-card { padding: 12px 8px; }
-    .info-card-icon { font-size: 24px; }
-    .info-card-value { font-size: 13px; }
-    .price-value { font-size: 16px; }
-    .edit-price-row { gap: 8px; }
-    .detail-card { padding: 12px; }
     .name-line { font-size: 15px; }
+    .result-line { font-size: 14px; }
+    .edit-price-row { gap: 8px; }
     .excel-table { font-size: 11px; }
     .excel-table th, .excel-table td { padding: 4px; }
-    .modal-content {
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        border-radius: 0;
-    }
-    .modal-header h2 { font-size: 16px; }
     .sheet-tab { font-size: 12px; padding: 6px 12px; }
 }

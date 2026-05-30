@@ -13,6 +13,9 @@ PORT = 8765
 EXCEL_PATH = r"E:\weixin\报价-2025.9.9.xlsx"
 STATIC_DIR = os.path.dirname(os.path.abspath(__file__))
 
+# 管理员密码（简单权限控制）
+ADMIN_PASSWORD = "battery2025"
+
 # 标准ID到Excel sheet和行的映射（在启动时建立索引）
 standard_index = {}
 
@@ -419,6 +422,14 @@ class RequestHandler(http.server.SimpleHTTPRequestHandler):
             except Exception as e:
                 print(f"获取full-sheet失败 (sheet={sheet_name}): {e}")
                 self.send_json({'success': False, 'message': f'读取Sheet数据失败: {str(e)}'}, 500)
+        
+        elif parsed.path == '/api/login':
+            params = urllib.parse.parse_qs(parsed.query)
+            password = params.get('password', [''])[0]
+            if password == ADMIN_PASSWORD:
+                self.send_json({'success': True, 'message': '登录成功'})
+            else:
+                self.send_json({'success': False, 'message': '密码错误'})
         
         elif parsed.path == '/api/export':
             # 直接返回Excel文件下载
