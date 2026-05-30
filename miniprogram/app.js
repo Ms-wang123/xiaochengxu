@@ -17,48 +17,114 @@ App({
   loadData() {
     wx.showLoading({ title: '加载数据中...', mask: true });
 
-    try {
-      // 加载元数据（sheet列表）
-      const sheets = require('./data/meta.json');
-      this.globalData.sheets = sheets;
+    const fs = wx.getFileSystemManager();
+    const app = this;
 
-      // 加载所有价格数据（使用JSON文件）
-      const allPrices = [];
-      try { allPrices.push(...require('./data/prices_CCC锂电池.json')); } catch (e) { console.warn('CCC锂电池加载失败:', e.message); }
-      try { allPrices.push(...require('./data/prices_GB40165.json')); } catch (e) { console.warn('GB40165加载失败:', e.message); }
-      try { allPrices.push(...require('./data/prices_GB标准.json')); } catch (e) { console.warn('GB标准加载失败:', e.message); }
-      try { allPrices.push(...require('./data/prices_IEC.json')); } catch (e) { console.warn('IEC加载失败:', e.message); }
-      try { allPrices.push(...require('./data/prices_UN38.3.json')); } catch (e) { console.warn('UN38.3加载失败:', e.message); }
-      try { allPrices.push(...require('./data/prices_其他标准.json')); } catch (e) { console.warn('其他标准加载失败:', e.message); }
+    // 读取 JSON 文件的辅助函数
+    const readJson = (path) => {
+      try {
+        const content = fs.readFileSync(path, 'utf8');
+        return JSON.parse(content);
+      } catch (e) {
+        console.warn('读取失败:', path, e.message);
+        return null;
+      }
+    };
 
-      this.globalData.prices = allPrices;
+    // 使用 setTimeout 让加载异步执行，避免阻塞
+    setTimeout(() => {
+      try {
+        // 加载元数据
+        const sheets = readJson('miniprogram/data/meta.json') || 
+                       readJson('data/meta.json') || [];
+        app.globalData.sheets = sheets;
 
-      // 加载表格数据（使用JSON文件）
-      const fullSheets = {};
-      try { fullSheets['GB40165'] = require('./data/sheet_GB40165.json'); } catch (e) { console.warn('GB40165表格加载失败:', e.message); }
-      try { fullSheets['GB标准'] = require('./data/sheet_GB标准.json'); } catch (e) { console.warn('GB标准表格加载失败:', e.message); }
-      try { fullSheets['IEC'] = require('./data/sheet_IEC.json'); } catch (e) { console.warn('IEC表格加载失败:', e.message); }
-      try { fullSheets['UN38.3'] = require('./data/sheet_UN38.3.json'); } catch (e) { console.warn('UN38.3表格加载失败:', e.message); }
-      try { fullSheets['其他标准'] = require('./data/sheet_其他标准.json'); } catch (e) { console.warn('其他标准表格加载失败:', e.message); }
+        // 加载价格数据
+        const allPrices = [];
+        const priceFiles = [
+          'miniprogram/data/prices_CCC锂电池.json',
+          'miniprogram/data/prices_GB40165.json',
+          'miniprogram/data/prices_GB标准.json',
+          'miniprogram/data/prices_IEC.json',
+          'miniprogram/data/prices_UN38.3.json',
+          'miniprogram/data/prices_其他标准.json'
+        ];
 
-      this.globalData.fullSheets = fullSheets;
-      console.log('已加载表格:', Object.keys(fullSheets));
+        for (const file of priceFiles) {
+          const data = readJson(file);
+          if (data && Array.isArray(data)) {
+            allPrices.push(...data);
+          }
+        }
 
-      // 构建搜索索引
-      this.buildSearchIndex();
+        // 如果上面路径失败，尝试不带 miniprogram 前缀的路径
+        if (allPrices.length === 0) {
+          const altPriceFiles = [
+            'data/prices_CCC锂电池.json',
+            'data/prices_GB40165.json',
+            'data/prices_GB标准.json',
+            'data/prices_IEC.json',
+            'data/prices_UN38.3.json',
+            'data/prices_其他标准.json'
+          ];
+          for (const file of altPriceFiles) {
+            const data = readJson(file);
+            if (data && Array.isArray(data)) {
+              allPrices.push(...data);
+            }
+          }
+        }
 
-      this.globalData.dataReady = true;
-      wx.hideLoading();
-      console.log('数据加载完成:', allPrices.length, '条标准,', sheets.length, '个Sheet');
-    } catch (err) {
-      wx.hideLoading();
-      wx.showModal({
-        title: '数据加载失败',
-        content: '请确保数据文件存在且格式正确: ' + err.message,
-        showCancel: false
-      });
-      console.error('数据加载失败:', err);
-    }
+        app.globalData.prices = allPrices;
+
+        // 加载表格数据
+        const fullSheets = {};
+        const tableFiles = [
+          { name: 'GB40165', path: 'miniprogram/data/sheet_GB40165.json' },
+          { name: 'GB标准', path: 'miniprogram/data/sheet_GB标准.json' },
+          { name: 'IEC', path: 'miniprogram/data/sheet_IEC.json' },
+          { name: 'UN38.3', path: 'miniprogram/data/sheet_UN38.3.json' },
+          { name: '其他标准', path: 'miniprogram/data/sheet_其他标准.json' }
+        ];
+
+        for (const item of tableFiles) {
+          let data = readJson(item.path);
+          if (!data) {
+            data = readJson(item.path.replace('miniprogram/', ''));
+          }
+          if (data) {
+            fullSheets[item.name] = data;
+          }
+        }
+
+        app.globalData.fullSheets = fullSheets;
+        console.log('已加载表格:', Object.keys(fullSheets));
+
+        // 构建搜索索引
+        app.buildSearchIndex();
+
+        app.globalData.dataReady = true;
+        wx.hideLoading();
+        console.log('数据加载完成:', allPrices.length, '条标准,', sheets.length, '个Sheet');
+
+        // 如果数据为空，显示警告
+        if (allPrices.length === 0) {
+          wx.showModal({
+            title: '数据加载警告',
+            content: '价格数据为空，请检查数据文件是否存在',
+            showCancel: false
+          });
+        }
+      } catch (err) {
+        wx.hideLoading();
+        wx.showModal({
+          title: '数据加载失败',
+          content: '加载数据时出错: ' + err.message,
+          showCancel: false
+        });
+        console.error('数据加载失败:', err);
+      }
+    }, 100);
   },
 
   buildSearchIndex() {
